@@ -1,0 +1,11 @@
+*.ts
+.eslintrc.js
+.git/**
+dist/**
+coverage/**
+nerdlets/**/nr1.json
+node_modules/**
+package-lock.json
+package.json
+test-results/**
+tmp/**

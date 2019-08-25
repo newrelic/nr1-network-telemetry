@@ -4,8 +4,18 @@
     "description": "Nerdpack nr1-network-telemetry-nerdpack",
     "version": "0.1.0",
     "scripts": {
+        "checkversion": "check-node-version --node $(cat .nvmrc)",
+        "format": "prettier \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore --list-different",
+        "format:fix": "npm run format -- --write",
+        "lint": "npm-run-all --parallel format lint:*",
+        "lint:css": "stylelint 'nerdlets/**/*.scss' --syntax scss",
+        "lint:css:fix": "npm run lint:css -- --fix",
+        "lint:js": "eslint --ignore-path .eslintignore .",
+        "lint:js:fix": "npm run lint:js -- --fix",
+        "lint:ts": "tsc",
         "start": "nr1 nerdpack:serve",
-        "test": "exit 0"
+        "test": "npm-run-all --sequential checkversion lint test:js",
+        "test:js": "jest"
     },
     "nr1": {
         "uuid": "38ea824d-60d8-4072-b6e8-ed96c26f5eaa",
@@ -20,5 +30,42 @@
         "last 2 versions",
         "not ie < 11",
         "not dead"
-    ]
+    ],
+    "devDependencies": {
+        "@commitlint/cli": "^8.1.0",
+        "@commitlint/config-conventional": "^8.1.0",
+        "@typescript-eslint/eslint-plugin": "^2.0.0",
+        "@typescript-eslint/experimental-utils": "^2.0.0",
+        "@typescript-eslint/parser": "^2.0.0",
+        "babel-core": "^6.26.3",
+        "babel-jest": "^24.9.0",
+        "babel-plugin-add-react-displayname": "0.0.5",
+        "check-node-version": "^4.0.1",
+        "eslint": "^6.2.2",
+        "eslint-config-prettier": "^6.1.0",
+        "eslint-config-standard": "^14.0.1",
+        "eslint-plugin-filenames": "^1.3.2",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-jasmine": "^2.10.1",
+        "eslint-plugin-jest": "^22.15.2",
+        "eslint-plugin-jsx-a11y": "^6.2.3",
+        "eslint-plugin-node": "^9.1.0",
+        "eslint-plugin-prettier": "^3.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-react": "^7.14.3",
+        "eslint-plugin-react-perf": "^3.2.1",
+        "eslint-plugin-standard": "^4.0.1",
+        "eslint-plugin-webdriverio": "^1.0.1",
+        "husky": "^3.0.4",
+        "jest": "^24.9.0",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^1.18.2",
+        "stylelint": "^10.1.0",
+        "stylelint-config-prettier": "^5.2.0",
+        "stylelint-config-recommended": "^2.2.0",
+        "stylelint-scss": "^3.9.4",
+        "ts-jest": "^24.0.2",
+        "tslint": "^5.19.0",
+        "typescript": "^3.5.3"
+    }
 }

@@ -1,4 +1,7 @@
-# @REPO@
+# Network Telemetry Nerdpack
+
+This Nerdpack visualizes data collected through the [Network
+Telemetry](https://github.com/newrelic/nri-network-telemetry) Integration.
 
 ## Getting started
 
@@ -11,12 +14,3 @@ npm start
 
 Visit https://one.newrelic.com/?nerdpacks=local and :sparkles:
 
-## Creating new artifacts
-
-If you want to create new artifacts run the following command:
-
-```
-nr1 create
-```
-
-> Example: `nr1 create --type nerdlet --name my-nerdlet`.

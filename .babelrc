@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-transform-runtime",
+    "add-react-displayname"
+  ],
+  "presets": ["@babel/preset-env", "@babel/preset-react", "@datanerd/nr1package"],
+}
