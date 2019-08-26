@@ -22,6 +22,7 @@
         "sdkVersion": 2
     },
     "dependencies": {
+        "d3": "^5.11.0",
         "prop-types": "^15.6.2",
         "react": "^16.6.3",
         "react-chord-diagram": "^1.2.0",
