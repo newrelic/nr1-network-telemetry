@@ -1,8 +1,0 @@
-{
-  "schemaType": "LAUNCHER",
-  "id": "my-launcher",
-  "description": "Describe me",
-  "displayName": "Nr1NetworkTelemetryNerdpack",
-  "icon": "interface_placeholders_icon-placeholder",
-  "rootNerdletId": "38ea824d-60d8-4072-b6e8-ed96c26f5eaa.my-nerdlet"
-}
