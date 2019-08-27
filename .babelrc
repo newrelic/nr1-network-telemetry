@@ -5,5 +5,5 @@
     "@babel/plugin-transform-runtime",
     "add-react-displayname"
   ],
-  "presets": ["@babel/preset-env", "@babel/preset-react", "@datanerd/nr1package"],
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
 }

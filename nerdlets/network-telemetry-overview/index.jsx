@@ -115,7 +115,7 @@ export default class MyNerdlet extends React.Component {
       if (!Array.isArray(acc[s])) {
         acc[s] = [];
       }
-      const value = (d["value"] || 0);
+      const value = d["value"] || 0;
       acc[s][t] = value;
       detailData.push({ source, target, value });
 
@@ -341,7 +341,11 @@ export default class MyNerdlet extends React.Component {
                       <Table.Row key={k}>
                         <Table.Cell>{r.source}</Table.Cell>
                         <Table.Cell>{r.target}</Table.Cell>
-                        <Table.Cell>{(queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value))}</Table.Cell>
+                        <Table.Cell>
+                          {queryAttribute === "throughput"
+                            ? bitsToSize(r.value)
+                            : intToSize(r.value)}
+                        </Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>
