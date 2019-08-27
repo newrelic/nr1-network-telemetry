@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
 import { Table } from "semantic-ui-react";
-import bytesToSize from "../../src/lib/bytes-to-size";
+import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
 import {
   BlockText,
   Tabs,
@@ -81,7 +81,10 @@ export default class MyNerdlet extends React.Component {
    * fetch data
    */
   async fetchChordData() {
-    this.setState({ isLoading: true });
+    const { queryAttribute } = this.state;
+
+    this.setState({ isLoading: true, detailData: [] });
+
     const results = await NerdGraphQuery.query({
       query: NERDGRAPH_NRQL_QUERY,
       variables: {
@@ -112,8 +115,9 @@ export default class MyNerdlet extends React.Component {
       if (!Array.isArray(acc[s])) {
         acc[s] = [];
       }
-      acc[s][t] = d["value"];
-      detailData.push({ source, target, value: d["value"]});
+      const value = (d["value"] || 0);
+      acc[s][t] = value;
+      detailData.push({ source, target, value });
 
       return acc;
     }, []);
@@ -151,7 +155,7 @@ export default class MyNerdlet extends React.Component {
   createNrqlQuery() {
     const { queryAttribute, queryLimit } = this.state;
 
-    let attr = "sum(scaledByteCount)";
+    let attr = "sum(scaledByteCount * 8)";
     if (queryAttribute === "count") {
       attr = "count(*)";
     }
@@ -302,24 +306,24 @@ export default class MyNerdlet extends React.Component {
           <GridItem className='side-info' columnSpan={3}>
             <table>
               <tbody>
-              <tr>
-                <td>
-                  <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
-                </td>
-                <td>
-                  <BlockText type={BlockText.TYPE.PARAGRAPH}>
-                    {selectedEntity || "All Devices"}
-                  </BlockText>
-                </td>
-              </tr>
-              <tr>
-                <td>&nbsp;</td>
-                <td>
-                  <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
-                    Device
-                  </BlockText>
-                </td>
-              </tr>
+                <tr>
+                  <td>
+                    <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
+                  </td>
+                  <td>
+                    <BlockText type={BlockText.TYPE.PARAGRAPH}>
+                      {selectedEntity || "All Devices"}
+                    </BlockText>
+                  </td>
+                </tr>
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>
+                    <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
+                      Device
+                    </BlockText>
+                  </td>
+                </tr>
               </tbody>
             </table>
             <Tabs defaultSelectedItem='flow-tab'>
@@ -333,11 +337,11 @@ export default class MyNerdlet extends React.Component {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {detailData.map((r,k) => (
+                    {detailData.map((r, k) => (
                       <Table.Row key={k}>
                         <Table.Cell>{r.source}</Table.Cell>
                         <Table.Cell>{r.target}</Table.Cell>
-                        <Table.Cell>{bytesToSize(r.value)}</Table.Cell>
+                        <Table.Cell>{(queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value))}</Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>
