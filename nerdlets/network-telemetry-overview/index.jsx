@@ -186,23 +186,35 @@ export default class MyNerdlet extends React.Component {
   }
 
   handleChartGroupClick(id) {
-    const { entities, relationships } = this.state;
+    const { entities, relationships, selectedEntity } = this.state;
 
-    const selectedEntity = entities[id];
+    const newEntity = entities[id];
 
-    // id row, all columns
-    const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
-      if (r !== 0) acc.push({ source: entities[k], target: selectedEntity, value: r });
-      return acc;
-    }, []);
+    // Unselect on repeated click
+    if (newEntity === selectedEntity) {
+      // all rows, all columns
+      const detailData = relationships.flatMap(row =>
+        row.reduce((acc, r, k) => {
+          if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
+          return acc;
+        }, [])
+      );
+      this.setState({ detailData, selectedEntity: "" });
+    } else {
+      // id row, all columns
+      const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
+        if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
+        return acc;
+      }, []);
 
-    // all rows, id column
-    const targetIds = relationships.reduce((acc, r, k) => {
-      if (r[id] !== 0) acc.push({ source: selectedEntity, target: entities[k], value: r[id] });
-      return acc;
-    }, []);
+      // all rows, id column
+      const targetIds = relationships.reduce((acc, r, k) => {
+        if (r[id] !== 0) acc.push({ source: newEntity, target: entities[k], value: r[id] });
+        return acc;
+      }, []);
 
-    this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity });
+      this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity: newEntity });
+    }
   }
 
   /*
