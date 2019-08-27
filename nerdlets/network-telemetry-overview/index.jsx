@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
 import { Table } from "semantic-ui-react";
+import bytesToSize from "../../src/lib/bytes-to-size";
 import {
   BlockText,
   Tabs,
@@ -90,6 +91,7 @@ export default class MyNerdlet extends React.Component {
     });
 
     let entities = [];
+    let detailData = [];
 
     const data = (
       ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || []
@@ -111,6 +113,7 @@ export default class MyNerdlet extends React.Component {
         acc[s] = [];
       }
       acc[s][t] = d["value"];
+      detailData.push({ source, target, value: d["value"]});
 
       return acc;
     }, []);
@@ -129,6 +132,7 @@ export default class MyNerdlet extends React.Component {
     }
 
     this.setState({
+      detailData,
       entities,
       entityColors,
       isLoading: false,
@@ -297,6 +301,7 @@ export default class MyNerdlet extends React.Component {
           </GridItem>
           <GridItem className='side-info' columnSpan={3}>
             <table>
+              <tbody>
               <tr>
                 <td>
                   <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
@@ -315,29 +320,32 @@ export default class MyNerdlet extends React.Component {
                   </BlockText>
                 </td>
               </tr>
+              </tbody>
             </table>
-            <Tabs defaultSelectedItem='detail-tab'>
-              <TabsItem itemKey='detail-tab' label='detail'>
-                <Table striped>
+            <Tabs defaultSelectedItem='flow-tab'>
+              <TabsItem itemKey='flow-tab' label='flow summary'>
+                <Table compact striped>
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell>source</Table.HeaderCell>
+                      <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
                       <Table.HeaderCell>destination</Table.HeaderCell>
                       <Table.HeaderCell>{this.state.queryAttribute}</Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {detailData.map(r => (
-                      <Table.Row>
+                    {detailData.map((r,k) => (
+                      <Table.Row key={k}>
                         <Table.Cell>{r.source}</Table.Cell>
                         <Table.Cell>{r.target}</Table.Cell>
-                        <Table.Cell>{r.value}</Table.Cell>
+                        <Table.Cell>{bytesToSize(r.value)}</Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>
                 </Table>
               </TabsItem>
-              <TabsItem itemKey='other-tab' label='other stuff'></TabsItem>
+              <TabsItem itemKey='other-tab' label='device info'>
+                TODO: Link {selectedEntity} back to an Entity via NetworkSample
+              </TabsItem>
             </Tabs>
           </GridItem>
         </Grid>
