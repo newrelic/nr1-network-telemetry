@@ -33,6 +33,22 @@
   background-color: #ffffff;
   height: 100%;
   padding: 5px;
+
+  label {
+    display: block;
+  }
+
+  .minor-heading {
+    color: #8e9494;
+    font-size: 12px;
+  }
+
+  .detail {
+    margin: 5px;
+    margin-left: 10px;
+  }
+}
+.detail-list {
 }
 
 /* Copied from nr1 Radio */
@@ -51,13 +67,13 @@
     background-color: #0079bf;
     border-color: #003555;
   }
+}
 
-  label {
-    color: #000e0e;
-    font-size: 14px;
-    line-height: 16px;
-    position: relative;
-  }
+label {
+  color: #000e0e;
+  font-size: 12px;
+  line-height: 16px;
+  position: relative;
 }
 
 .radio-option {

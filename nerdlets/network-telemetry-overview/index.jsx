@@ -1,7 +1,19 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
-import { Grid, GridItem, HeadingText, NerdGraphQuery, Spinner } from "nr1";
+import {
+  BlockText,
+  Tabs,
+  TabsItem,
+  Icon,
+  List,
+  ListItem,
+  Grid,
+  GridItem,
+  HeadingText,
+  NerdGraphQuery,
+  Spinner,
+} from "nr1";
 import { RadioGroup, Radio } from "react-radio-group";
 
 import * as d3 from "d3";
@@ -32,6 +44,11 @@ export default class MyNerdlet extends React.Component {
     super(props);
 
     this.state = {
+      detailData: {
+        source: null,
+        targets: [],
+        throughput: [],
+      },
       entities: [],
       isLoading: true,
       queryAttribute: "throughput",
@@ -40,6 +57,7 @@ export default class MyNerdlet extends React.Component {
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
+    this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
   }
 
@@ -161,6 +179,28 @@ export default class MyNerdlet extends React.Component {
     }
   }
 
+  handleChartGroupClick(id) {
+    const { entities, relationships } = this.state;
+
+    console.log(id);
+
+    const targetIds = relationships.reduce((acc, r, k) => {
+      if (r[id] !== 0) acc.push(k);
+      return acc;
+    }, []);
+
+    const targets = targetIds.map(t => entities[t]);
+    const throughput = targetIds.map(t => (relationships[t] || [])[id] || 0);
+
+    const detailData = {
+      source: entities[id],
+      targets,
+      throughput,
+    };
+
+    this.setState({ detailData });
+  }
+
   /*
    * Helper function to turn timeRange into NRQL Since
    */
@@ -180,6 +220,7 @@ export default class MyNerdlet extends React.Component {
 
   render() {
     const {
+      detailData,
       entities,
       entityColors,
       queryAttribute,
@@ -196,7 +237,9 @@ export default class MyNerdlet extends React.Component {
       <div className='background'>
         <Grid className='fullheight'>
           <GridItem className='side-menu' columnSpan={2}>
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Line Visualization</HeadingText>
+            <BlockText type={BlockText.TYPE.NORMAL}>
+              <strong>Show devices with...</strong>
+            </BlockText>
             <RadioGroup
               className='radio-group'
               name='attribute'
@@ -205,15 +248,17 @@ export default class MyNerdlet extends React.Component {
             >
               <div className='radio-option'>
                 <Radio value='throughput' />
-                <label>Throughput</label>
+                <label>Highest Throughput</label>
               </div>
               <div className='radio-option'>
                 <Radio value='count' />
-                <label>Flows Collected</label>
+                <label>Most flows collected</label>
               </div>
             </RadioGroup>
             <br />
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Entity Limit</HeadingText>
+            <BlockText type={BlockText.TYPE.NORMAL}>
+              <strong>Limit results to...</strong>
+            </BlockText>
             <RadioGroup
               className='radio-group'
               name='limit'
@@ -222,15 +267,15 @@ export default class MyNerdlet extends React.Component {
             >
               <div className='radio-option'>
                 <Radio value='25' />
-                <label>25</label>
+                <label>25 devices</label>
               </div>
               <div className='radio-option'>
                 <Radio value='50' />
-                <label>50</label>
+                <label>50 devices</label>
               </div>
               <div className='radio-option'>
                 <Radio value='100' />
-                <label>100</label>
+                <label>100 devices</label>
               </div>
             </RadioGroup>
           </GridItem>
@@ -239,7 +284,6 @@ export default class MyNerdlet extends React.Component {
               <Spinner fillContainer />
             ) : (
               <ChordDiagram
-                className='chord-chart'
                 componentId={1}
                 groupColors={entityColors}
                 groupLabels={entities}
@@ -248,13 +292,42 @@ export default class MyNerdlet extends React.Component {
                 matrix={relationships}
                 outerRadius={outerRadius}
                 width={width}
+                groupOnClick={this.handleChartGroupClick}
               />
             )}
           </GridItem>
           <GridItem className='side-info' columnSpan={3}>
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Overview</HeadingText>
-            Stuff goes here...
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Details</HeadingText>
+            <table>
+              <tr>
+                <td>
+                  <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
+                </td>
+                <td>
+                  <BlockText type={BlockText.TYPE.PARAGRAPH}>
+                    {detailData.source || "All Devices"}
+                  </BlockText>
+                </td>
+              </tr>
+              <tr>
+                <td>&nbsp;</td>
+                <td>
+                  <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
+                    Device
+                  </BlockText>
+                </td>
+              </tr>
+            </table>
+            <Tabs defaultSelectedItem='detail-tab'>
+              <TabsItem itemKey='detail-tab' label='detail'>
+                <span className='detail'>TODO</span>
+              </TabsItem>
+              <TabsItem itemKey='other-tab' label='other stuff'>
+                <span className='detail'>
+                  <label>Throughput:</label>
+                  {detailData.throughput || null}
+                </span>
+              </TabsItem>
+            </Tabs>
           </GridItem>
         </Grid>
       </div>
