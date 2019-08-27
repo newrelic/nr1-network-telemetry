@@ -17,6 +17,12 @@
         "test": "npm-run-all --sequential checkversion lint test:js",
         "test:js": "jest"
     },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
+            "pre-push": "npm run test"
+        }
+    },
     "bugs": {
         "email": "opensource@newrelic.com"
     },
