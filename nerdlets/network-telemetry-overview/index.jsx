@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
+import { Table } from "semantic-ui-react";
 import {
   BlockText,
   Tabs,
@@ -44,16 +45,13 @@ export default class MyNerdlet extends React.Component {
     super(props);
 
     this.state = {
-      detailData: {
-        source: null,
-        targets: [],
-        throughput: [],
-      },
+      detailData: [],
       entities: [],
       isLoading: true,
       queryAttribute: "throughput",
       queryLimit: "50",
       relationships: [],
+      selectedEntity: null,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -182,23 +180,21 @@ export default class MyNerdlet extends React.Component {
   handleChartGroupClick(id) {
     const { entities, relationships } = this.state;
 
-    console.log(id);
+    const selectedEntity = entities[id];
 
-    const targetIds = relationships.reduce((acc, r, k) => {
-      if (r[id] !== 0) acc.push(k);
+    // id row, all columns
+    const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
+      if (r !== 0) acc.push({ source: entities[k], target: selectedEntity, value: r });
       return acc;
     }, []);
 
-    const targets = targetIds.map(t => entities[t]);
-    const throughput = targetIds.map(t => (relationships[t] || [])[id] || 0);
+    // all rows, id column
+    const targetIds = relationships.reduce((acc, r, k) => {
+      if (r[id] !== 0) acc.push({ source: selectedEntity, target: entities[k], value: r[id] });
+      return acc;
+    }, []);
 
-    const detailData = {
-      source: entities[id],
-      targets,
-      throughput,
-    };
-
-    this.setState({ detailData });
+    this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity });
   }
 
   /*
@@ -227,11 +223,14 @@ export default class MyNerdlet extends React.Component {
       queryLimit,
       isLoading,
       relationships,
+      selectedEntity,
     } = this.state;
     const width = 600;
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
+
+    console.log(detailData);
 
     return (
       <div className='background'>
@@ -304,7 +303,7 @@ export default class MyNerdlet extends React.Component {
                 </td>
                 <td>
                   <BlockText type={BlockText.TYPE.PARAGRAPH}>
-                    {detailData.source || "All Devices"}
+                    {selectedEntity || "All Devices"}
                   </BlockText>
                 </td>
               </tr>
@@ -319,14 +318,26 @@ export default class MyNerdlet extends React.Component {
             </table>
             <Tabs defaultSelectedItem='detail-tab'>
               <TabsItem itemKey='detail-tab' label='detail'>
-                <span className='detail'>TODO</span>
+                <Table striped>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell>source</Table.HeaderCell>
+                      <Table.HeaderCell>destination</Table.HeaderCell>
+                      <Table.HeaderCell>{this.state.queryAttribute}</Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {detailData.map(r => (
+                      <Table.Row>
+                        <Table.Cell>{r.source}</Table.Cell>
+                        <Table.Cell>{r.target}</Table.Cell>
+                        <Table.Cell>{r.value}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
               </TabsItem>
-              <TabsItem itemKey='other-tab' label='other stuff'>
-                <span className='detail'>
-                  <label>Throughput:</label>
-                  {detailData.throughput || null}
-                </span>
-              </TabsItem>
+              <TabsItem itemKey='other-tab' label='other stuff'></TabsItem>
             </Tabs>
           </GridItem>
         </Grid>
