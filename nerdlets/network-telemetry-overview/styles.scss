@@ -1,0 +1,68 @@
+.fullheight {
+  height: 100%;
+}
+
+.background {
+  background-color: #f7f7f8;
+  height: 100%;
+  width: 100%;
+}
+
+.chord-container {
+  -webkit-box-align: center;
+  -webkit-justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+.chord-chart {
+  font-size: 10px;
+}
+
+.side-menu {
+  background-color: #ffffff;
+  height: 100%;
+  padding: 5px;
+}
+
+.side-info {
+  background-color: #ffffff;
+  height: 100%;
+  padding: 5px;
+}
+
+/* Copied from nr1 Radio */
+.radio-group {
+  input[type="radio"] {
+    background-color: #fafbfb;
+    border-radius: 100%;
+    border: 1px solid #b9bdbd;
+    height: 16px;
+    margin-left: 4px;
+    margin-right: 8px;
+    width: 16px;
+  }
+
+  input[type="radio"]:checked {
+    background-color: #0079bf;
+    border-color: #003555;
+  }
+
+  label {
+    color: #000e0e;
+    font-size: 14px;
+    line-height: 16px;
+    position: relative;
+  }
+}
+
+.radio-option {
+  -webkit-box-align: center;
+  align-items: center;
+  display: flex;
+  margin-bottom: 4px;
+}

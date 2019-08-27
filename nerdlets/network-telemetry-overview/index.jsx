@@ -1,7 +1,9 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
-import { Dropdown, DropdownItem, NerdGraphQuery, Spinner } from "nr1";
+import { Grid, GridItem, HeadingText, NerdGraphQuery, Spinner } from "nr1";
+import { RadioGroup, Radio } from "react-radio-group";
+
 import * as d3 from "d3";
 
 const NERDGRAPH_NRQL_QUERY = `
@@ -33,9 +35,12 @@ export default class MyNerdlet extends React.Component {
       entities: [],
       isLoading: true,
       queryAttribute: "throughput",
-      queryLimit: 50,
+      queryLimit: "50",
       relationships: [],
     };
+
+    this.handleAttributeChange = this.handleAttributeChange.bind(this);
+    this.handleLimitChange = this.handleLimitChange.bind(this);
   }
 
   componentDidMount() {
@@ -174,41 +179,84 @@ export default class MyNerdlet extends React.Component {
   }
 
   render() {
-    const { entities, entityColors, isLoading, relationships } = this.state;
-    const width = 1000;
+    const {
+      entities,
+      entityColors,
+      queryAttribute,
+      queryLimit,
+      isLoading,
+      relationships,
+    } = this.state;
+    const width = 600;
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
     return (
-      <div>
-        <Dropdown title='Line Visualization'>
-          <DropdownItem onClick={() => this.handleAttributeChange("throughput")}>
-            Throughput
-          </DropdownItem>
-          <DropdownItem onClick={() => this.handleAttributeChange("count")}>
-            Flow Count
-          </DropdownItem>
-        </Dropdown>
-        <Dropdown title='Entity Limit'>
-          <DropdownItem onClick={() => this.handleLimitChange(25)}>25</DropdownItem>
-          <DropdownItem onClick={() => this.handleLimitChange(50)}>50</DropdownItem>
-          <DropdownItem onClick={() => this.handleLimitChange(100)}>100</DropdownItem>
-        </Dropdown>
-        {isLoading ? (
-          <Spinner />
-        ) : (
-          <ChordDiagram
-            componentId={1}
-            groupColors={entityColors}
-            groupLabels={entities}
-            height={height}
-            innerRadius={innerRadius}
-            matrix={relationships}
-            outerRadius={outerRadius}
-            width={width}
-          />
-        )}
+      <div className='background'>
+        <Grid className='fullheight'>
+          <GridItem className='side-menu' columnSpan={2}>
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Line Visualization</HeadingText>
+            <RadioGroup
+              className='radio-group'
+              name='attribute'
+              onChange={this.handleAttributeChange}
+              selectedValue={queryAttribute}
+            >
+              <div className='radio-option'>
+                <Radio value='throughput' />
+                <label>Throughput</label>
+              </div>
+              <div className='radio-option'>
+                <Radio value='count' />
+                <label>Flows Collected</label>
+              </div>
+            </RadioGroup>
+            <br />
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Entity Limit</HeadingText>
+            <RadioGroup
+              className='radio-group'
+              name='limit'
+              onChange={this.handleLimitChange}
+              selectedValue={queryLimit}
+            >
+              <div className='radio-option'>
+                <Radio value='25' />
+                <label>25</label>
+              </div>
+              <div className='radio-option'>
+                <Radio value='50' />
+                <label>50</label>
+              </div>
+              <div className='radio-option'>
+                <Radio value='100' />
+                <label>100</label>
+              </div>
+            </RadioGroup>
+          </GridItem>
+          <GridItem className='chord-container' columnSpan={7}>
+            {isLoading ? (
+              <Spinner fillContainer />
+            ) : (
+              <ChordDiagram
+                className='chord-chart'
+                componentId={1}
+                groupColors={entityColors}
+                groupLabels={entities}
+                height={height}
+                innerRadius={innerRadius}
+                matrix={relationships}
+                outerRadius={outerRadius}
+                width={width}
+              />
+            )}
+          </GridItem>
+          <GridItem className='side-info' columnSpan={3}>
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Overview</HeadingText>
+            Stuff goes here...
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Details</HeadingText>
+          </GridItem>
+        </Grid>
       </div>
     );
   }
