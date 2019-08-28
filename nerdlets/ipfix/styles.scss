@@ -1,1 +1,16 @@
 @import "../../src/common.scss";
+
+.sankey-chart {
+  font-size: 10px;
+}
+
+.sankey-container {
+  -webkit-box-align: top;
+  -webkit-justify-content: center;
+  align-items: top;
+  background-color: #ffffff;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}

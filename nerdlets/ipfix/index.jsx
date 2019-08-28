@@ -4,6 +4,9 @@ import { Button, BlockText, Grid, GridItem, Spinner } from "nr1";
 import { AccountDropdown } from "nr1-commune";
 import { fetchNrqlResults } from "../../src/lib/nrql";
 import { Sankey } from "react-vis";
+import { RadioGroup, Radio } from "react-radio-group";
+import { Table } from "semantic-ui-react";
+import { bitsToSize } from "../../src/lib/bytes-to-size";
 
 import * as d3 from "d3";
 
@@ -48,23 +51,34 @@ export default class Ipfix extends React.Component {
       account: {},
       enabled: false,
       isLoading: true,
+      peerBy: 'peerName',
       links: [],
       nodes: [],
+      nodeSummary: [],
+      reset: false,
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
+    this.handlePeerByChange = this.handlePeerByChange.bind(this);
   }
 
   /*
    * React Lifecycle
    */
   componentDidMount() {
-    //this.fetchIpfixData();  // don't have account yet
-    this.refresh = setInterval(async ()=>{
-      if(this.state.enabled){
+    this.startTimer();
+  }
+
+  startTimer() {
+    this.refresh = setInterval(async () => {
+      if (this.state.enabled) {
         this.fetchIpfixData();
       }
-    }, 1500);
+    }, 3000);
+  }
+
+  stopTimer() {
+    clearInterval(this.refresh)
   }
 
   /*
@@ -72,7 +86,16 @@ export default class Ipfix extends React.Component {
    */
   handleAccountChange(account) {
     if (account) {
-      this.setState({ account, isLoading: false, enabled: true });//, () => this.fetchIpfixData());
+      this.setState({ account, isLoading: false, enabled: true });
+    }
+  }
+
+  async handlePeerByChange(peerBy) {
+    if (peerBy) {
+      this.stopTimer();
+      await this.setState({ peerBy, isLoading: true, enabled: false, reset: true });
+      this.startTimer();
+      this.setState({ isLoading: false, enabled: true });
     }
   }
 
@@ -86,52 +109,71 @@ export default class Ipfix extends React.Component {
   }
 
   async fetchIpfixData() {
-    const { account } = this.state;
+    const { account, peerBy, reset } = this.state;
 
     if (!account || !account.id) return;
 
-    //this.setState({ isLoading: true, detailData: [] });
+    const nodeSummary = (reset ? [] : this.state.nodeSummary);
+    if (reset) this.setState({ reset: false });
 
-    //const results = await fetchNrqlResults(account.id,
-    //  "FROM ipfix SELECT sum(octetDeltaCount) as 'value' " +
-    //  "FACET agent, bgpSourceAsNumber, bgpDestinationAsNumber " + 
-    //  "SINCE 3 seconds ago"
-    //);
-    const results = await fetchNrqlResults(account.id,
+    const results = await fetchNrqlResults(
+      account.id,
       "FROM ipfix" +
-      " SELECT sum(octetDeltaCount * 64000) as 'value'" +
-      " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
-      " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +
-      " OR (bgpSourceAsNumber > 4294967294)" +
-      " FACET agent, bgpSourceAsNumber" +
-      " SINCE 3 seconds ago" +
-      " LIMIT 25"
+        " SELECT sum(octetDeltaCount * 64000) as 'value'" +
+        " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
+        " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +
+        " OR (bgpSourceAsNumber > 4294967294)" +
+        " FACET " + peerBy + ", agent, destinationIPv4Address" +
+        " SINCE 3 seconds ago" +
+        " LIMIT 50"
     );
-    console.log(results);
 
+    let links = [];
     let nodes = [];
 
-    const links = results.reduce((acc, row) => {
-      const agent = row.facet[0];
-      const sourceAs = row.facet[1];
+    results.forEach((row) => {
+      // Collect nodes
+      const ids = (row.facet || []).map((f) => {
+        const id = nodes.findIndex((node) => (node.name === f));
+        if (id < 0) return (nodes.push({ name: f }) - 1);
+
+        return id;
+      });
+
       const value = row.value;
+      let sId = nodeSummary.findIndex((node) => (node.name === nodes[ids[0]].name));
+      if (sId >= 0) {
+        nodeSummary[sId].value += value;
+      } else {
+        sId = nodeSummary.push({
+          color: COLORS[(nodeSummary.length % COLORS.length)],
+          name: nodes[ids[0]].name,
+          value
+        }) - 1;
+      }
 
-      if (nodes.indexOf(agent) === -1) nodes.push(agent);
-      const a = nodes.indexOf(agent);
+      // Update existing links (AS => Router)
+      const sa = links.findIndex((link) => (link.source === ids[0] && link.target === ids[1]));
+      if (sa >= 0) {
+        links[sa].value += value;
+      } else {
+        links.push({ source: ids[0], target: ids[1], value, color: nodeSummary[sId].color });
+      }
 
-      if (nodes.indexOf(sourceAs) === -1) nodes.push(sourceAs);
-      const s = nodes.indexOf(sourceAs);
+      // Update existing links (Router => IP)
+      const ad = links.findIndex((link) => (link.source === ids[1] && link.target === ids[2]));
+      if (ad >= 0) {
+        links[ad].value += value;
+      } else {
+        links.push({ source: ids[1], target: ids[2], value, color: nodeSummary[sId].color });
+      }
+    });
 
-      const c = (s % COLORS.length);
-
-      // really hand-wavey
-      acc.push({ source: s, target: a, value, color: COLORS[c] });
-
-      return acc;
-    }, []);
+    console.log(nodes, links);
 
     this.setState({
-      nodes: nodes.map((n) => ({ name: n })),
+      nodeSummary,
+      nodes,
       links,
     });
   }
@@ -140,7 +182,7 @@ export default class Ipfix extends React.Component {
    * Main render
    */
   render() {
-    const { links, nodes, isLoading } = this.state;
+    const { links, nodes, peerBy, isLoading } = this.state;
 
     return (
       <div className='background'>
@@ -155,26 +197,71 @@ export default class Ipfix extends React.Component {
               urlState={this.props.nerdletUrlState}
             />
             <br />
+            <BlockText type={BlockText.TYPE.NORMAL}>
+              <strong>Show peers by...</strong>
+            </BlockText>
+            <RadioGroup
+              className='radio-group'
+              name='peerBy'
+              onChange={this.handlePeerByChange}
+              selectedValue={peerBy}
+            >
+              <div className='radio-option'>
+                <Radio value='peerName' />
+                <label>Peer Name</label>
+              </div>
+              <div className='radio-option'>
+                <Radio value='bgpSourceAsNumber' />
+                <label>AS Number</label>
+              </div>
+            </RadioGroup>
+            <br />
             <Button
               onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
               sizeType={Button.SIZE_TYPE.SLIM}
             >
-              {(this.state.enabled ? "Pause" : "Resume")}
+              {this.state.enabled ? "Pause" : "Resume"}
             </Button>
           </GridItem>
-          <GridItem className='chord-container' columnSpan={10}>
-            {isLoading ?
-              <Spinner fillContainer /> :
-              <Sankey
-                nodes={nodes}
-                links={links}
-                width={700}
-                height={700}
-              />
-            }
+          <GridItem className='sankey-container' columnSpan={7}>
+            {isLoading ? (
+              <Spinner fillContainer />
+            ) : (
+              <Sankey nodes={nodes} links={links} width={700} height={700} />
+            )}
+          </GridItem>
+          <GridItem className='side-info' columnSpan={3}>
+            <BlockText type={BlockText.TYPE.NORMAL}>
+              <strong>Summary</strong>
+            </BlockText>
+            {this.renderNodeSummaryTable()}
           </GridItem>
         </Grid>
       </div>
     );
   }
+
+  renderNodeSummaryTable() {
+    const { nodeSummary } = this.state;
+
+    return (
+      <Table compact striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Source</Table.HeaderCell>
+            <Table.HeaderCell>Throughput</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {nodeSummary.sort((a,b) => (a.value < b.value ? 1 : -1 )).map((n, k) => (
+            <Table.Row key={k} style={{ color: n.color }}>
+              <Table.Cell>{n.name}</Table.Cell>
+              <Table.Cell>{bitsToSize(n.value)}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+    );
+  }
+
 }

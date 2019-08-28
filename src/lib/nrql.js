@@ -27,4 +27,4 @@ export const fetchNrqlResults = async (accountId, query) => {
   });
 
   return ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || [];
-}
+};
