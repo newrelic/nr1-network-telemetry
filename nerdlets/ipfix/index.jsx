@@ -19,10 +19,10 @@ export default class Ipfix extends React.Component {
       isLoading: true,
     };
 
-    this.onAccountSelected = this.onAccountSelected.bind(this);
+    this.handleAccountChange = this.handleAccountChange.bind(this);
   }
 
-  onAccountSelected(account) {
+  handleAccountChange(account) {
     if (account) this.setState({ account });
   }
 
@@ -38,7 +38,7 @@ export default class Ipfix extends React.Component {
             </BlockText>
             <AccountDropdown
               className='account-dropdown'
-              onSelect={this.onAccountSelected}
+              onSelect={this.handleAccountChange}
               urlState={this.props.nerdletUrlState}
             />
           </GridItem>

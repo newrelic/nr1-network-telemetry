@@ -49,14 +49,10 @@ export default class NetworkTelemetryOverview extends React.Component {
       selectedEntity: null,
     };
 
-    this.onAccountSelected = this.onAccountSelected.bind(this);
+    this.handleAccountChange = this.handleAccountChange.bind(this);
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
     this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
-  }
-
-  onAccountSelected(account) {
-    if (account) this.setState({ account });
   }
 
   componentDidMount() {
@@ -80,6 +76,20 @@ export default class NetworkTelemetryOverview extends React.Component {
   /*
    * fetch data
    */
+  async fetchNrql(accountId, query) {
+    if (!accountId || !query) return;
+
+    const results = await NerdGraphQuery.query({
+      query: NERDGRAPH_NRQL_QUERY,
+      variables: {
+        accountid: accountId,
+        nrql: query,
+      },
+    });
+
+    return ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || [];
+  }
+
   async fetchChordData() {
     const { account, queryAttribute } = this.state;
 
@@ -87,36 +97,23 @@ export default class NetworkTelemetryOverview extends React.Component {
 
     this.setState({ isLoading: true, detailData: [] });
 
-    const results = await NerdGraphQuery.query({
-      query: NERDGRAPH_NRQL_QUERY,
-      variables: {
-        accountid: account.id,
-        nrql: this.createNrqlQuery(),
-      },
-    });
+    const results = await this.fetchNrql(account.id, this.createNrqlQuery());
 
     let entities = [];
     let detailData = [];
 
-    const data = (
-      ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || []
-    ).reduce((acc, d) => {
+    const data = results.reduce((acc, d) => {
       const source = d.facet[0];
       const target = d.facet[1];
 
-      if (entities.indexOf(source) === -1) {
-        entities.push(source);
-      }
+      if (entities.indexOf(source) === -1) entities.push(source);
       const s = entities.indexOf(source);
 
-      if (entities.indexOf(target) === -1) {
-        entities.push(target);
-      }
+      if (entities.indexOf(target) === -1) entities.push(target);
       const t = entities.indexOf(target);
 
-      if (!Array.isArray(acc[s])) {
-        acc[s] = [];
-      }
+      if (!Array.isArray(acc[s])) acc[s] = [];
+
       const value = d["value"] || 0;
       acc[s][t] = value;
       detailData.push({ source, target, value });
@@ -176,6 +173,10 @@ export default class NetworkTelemetryOverview extends React.Component {
     );
   }
 
+  handleAccountChange(account) {
+    if (account) this.setState({ account });
+  }
+
   handleAttributeChange(attr) {
     if (attr === "count" || attr === "throughput") {
       this.setState({ queryAttribute: attr });
@@ -229,7 +230,7 @@ export default class NetworkTelemetryOverview extends React.Component {
         </BlockText>
         <AccountDropdown
           className='account-dropdown'
-          onSelect={this.onAccountSelected}
+          onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
         />
         <BlockText type={BlockText.TYPE.NORMAL}>
