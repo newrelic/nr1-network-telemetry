@@ -1,0 +1,8 @@
+{
+  "schemaType": "LAUNCHER",
+  "id": "ipfix-launcher",
+  "displayName": "Ipfix",
+  "description": "Explore IPFIX Data",
+  "icon": "hardware-&-software_hardware_network",
+  "rootNerdletId": "38ea824d-60d8-4072-b6e8-ed96c26f5eaa.ipfix"
+}
