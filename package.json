@@ -32,11 +32,13 @@
     },
     "dependencies": {
         "d3": "^5.11.0",
+        "nr1-commune": "github:newrelic/nr1-commune",
         "prop-types": "^15.6.2",
         "react": "^16.6.3",
         "react-chord-diagram": "^1.3.0",
         "react-dom": "^16.6.3",
         "react-radio-group": "^3.0.3",
+        "react-vis": "^1.11.7",
         "semantic-ui-react": "^0.88.0"
     },
     "browserslist": [

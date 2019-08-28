@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
-import AccountDropdown from "../../src/components/account-dropdown";
+import { AccountDropdown } from "nr1-commune";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
-import { timeRangeToNrql } from "../../src/lib/time-range-to-nrql";
+import { timeRangeToNrql } from "nr1-commune";
 import {
   BlockText,
   Tabs,
@@ -15,14 +15,12 @@ import {
   Grid,
   GridItem,
   HeadingText,
-  NerdGraphQuery,
   Spinner,
 } from "nr1";
 import { RadioGroup, Radio } from "react-radio-group";
+import { fetchNrqlResults } from "../../src/lib/nrql";
 
 import * as d3 from "d3";
-
-import { NERDGRAPH_NRQL_QUERY } from "../../src/constants";
 
 const COLOR_START = "#11A893";
 const COLOR_END = "#FFC400";
@@ -76,20 +74,6 @@ export default class NetworkTelemetryOverview extends React.Component {
   /*
    * fetch data
    */
-  async fetchNrql(accountId, query) {
-    if (!accountId || !query) return;
-
-    const results = await NerdGraphQuery.query({
-      query: NERDGRAPH_NRQL_QUERY,
-      variables: {
-        accountid: accountId,
-        nrql: query,
-      },
-    });
-
-    return ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || [];
-  }
-
   async fetchChordData() {
     const { account, queryAttribute } = this.state;
 
@@ -97,7 +81,7 @@ export default class NetworkTelemetryOverview extends React.Component {
 
     this.setState({ isLoading: true, detailData: [] });
 
-    const results = await this.fetchNrql(account.id, this.createNrqlQuery());
+    const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
 
     let entities = [];
     let detailData = [];
