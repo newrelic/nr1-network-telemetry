@@ -3,6 +3,7 @@ import React from "react";
 import ChordDiagram from "react-chord-diagram";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
+import { timeRangeToNrql } from "../../src/lib/time-range-to-nrql";
 import {
   BlockText,
   Tabs,
@@ -20,16 +21,7 @@ import { RadioGroup, Radio } from "react-radio-group";
 
 import * as d3 from "d3";
 
-const NERDGRAPH_NRQL_QUERY = `
-query ($accountid:Int!, $nrql:Nrql!) {
-  actor {
-    account(id: $accountid) {
-      nrql(query: $nrql, timeout: 10) {
-        results
-      }
-    }
-  }
-}`;
+import { NERDGRAPH_NRQL_QUERY } from "../../src/constants";
 
 const COLOR_START = "#11A893";
 const COLOR_END = "#FFC400";
@@ -169,7 +161,7 @@ export default class MyNerdlet extends React.Component {
       " LIMIT " +
       queryLimit +
       " " +
-      this.timeRangeToNrql()
+      timeRangeToNrql(this.props.launcherUrlState)
     );
   }
 
@@ -217,23 +209,6 @@ export default class MyNerdlet extends React.Component {
     }
   }
 
-  /*
-   * Helper function to turn timeRange into NRQL Since
-   */
-  timeRangeToNrql() {
-    const { timeRange } = this.props.launcherUrlState || {};
-
-    if (!timeRange) {
-      return "";
-    } else if (timeRange.begin_time && timeRange.end_time) {
-      return ` SINCE ${timeRange.begin_time} UNTIL ${timeRange.end_time}`;
-    } else if (timeRange.duration) {
-      return ` SINCE ${timeRange.duration / 1000} SECONDS AGO`;
-    }
-
-    return "";
-  }
-
   render() {
     const {
       detailData,
@@ -249,8 +224,6 @@ export default class MyNerdlet extends React.Component {
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
-
-    console.log(detailData);
 
     return (
       <div className='background'>
