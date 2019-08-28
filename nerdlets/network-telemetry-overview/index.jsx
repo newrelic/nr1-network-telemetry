@@ -27,7 +27,7 @@ import { NERDGRAPH_NRQL_QUERY } from "../../src/constants";
 const COLOR_START = "#11A893";
 const COLOR_END = "#FFC400";
 
-export default class MyNerdlet extends React.Component {
+export default class NetworkTelemetryOverview extends React.Component {
   static propTypes = {
     height: PropTypes.number,
     launcherUrlState: PropTypes.object,
@@ -146,6 +146,7 @@ export default class MyNerdlet extends React.Component {
     });
   }
 
+  // Returns a FUNCTION that generates a color...
   colorForEntity(entityCount) {
     return d3.scale
       .linear()
@@ -219,17 +220,65 @@ export default class MyNerdlet extends React.Component {
     }
   }
 
+  renderSideMenu() {
+    const { queryAttribute, queryLimit } = this.state;
+    return (
+      <>
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Account</strong>
+        </BlockText>
+        <AccountDropdown
+          className='account-dropdown'
+          onSelect={this.onAccountSelected}
+          urlState={this.props.nerdletUrlState}
+        />
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Show devices with...</strong>
+        </BlockText>
+        <RadioGroup
+          className='radio-group'
+          name='attribute'
+          onChange={this.handleAttributeChange}
+          selectedValue={queryAttribute}
+        >
+          <div className='radio-option'>
+            <Radio value='throughput' />
+            <label>Highest Throughput</label>
+          </div>
+          <div className='radio-option'>
+            <Radio value='count' />
+            <label>Most flows collected</label>
+          </div>
+        </RadioGroup>
+        <br />
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Limit results to...</strong>
+        </BlockText>
+        <RadioGroup
+          className='radio-group'
+          name='limit'
+          onChange={this.handleLimitChange}
+          selectedValue={queryLimit}
+        >
+          <div className='radio-option'>
+            <Radio value='25' />
+            <label>25 devices</label>
+          </div>
+          <div className='radio-option'>
+            <Radio value='50' />
+            <label>50 devices</label>
+          </div>
+          <div className='radio-option'>
+            <Radio value='100' />
+            <label>100 devices</label>
+          </div>
+        </RadioGroup>
+      </>
+    );
+  }
+
   render() {
-    const {
-      detailData,
-      entities,
-      entityColors,
-      queryAttribute,
-      queryLimit,
-      isLoading,
-      relationships,
-      selectedEntity,
-    } = this.state;
+    const { entities, entityColors, isLoading, relationships } = this.state;
     const width = 600;
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
@@ -239,55 +288,7 @@ export default class MyNerdlet extends React.Component {
       <div className='background'>
         <Grid className='fullheight'>
           <GridItem className='side-menu' columnSpan={2}>
-            <BlockText type={BlockText.TYPE.NORMAL}>
-              <strong>Account</strong>
-            </BlockText>
-            <AccountDropdown
-              className='account-dropdown'
-              onSelect={this.onAccountSelected}
-              urlState={this.props.nerdletUrlState}
-            />
-            <BlockText type={BlockText.TYPE.NORMAL}>
-              <strong>Show devices with...</strong>
-            </BlockText>
-            <RadioGroup
-              className='radio-group'
-              name='attribute'
-              onChange={this.handleAttributeChange}
-              selectedValue={queryAttribute}
-            >
-              <div className='radio-option'>
-                <Radio value='throughput' />
-                <label>Highest Throughput</label>
-              </div>
-              <div className='radio-option'>
-                <Radio value='count' />
-                <label>Most flows collected</label>
-              </div>
-            </RadioGroup>
-            <br />
-            <BlockText type={BlockText.TYPE.NORMAL}>
-              <strong>Limit results to...</strong>
-            </BlockText>
-            <RadioGroup
-              className='radio-group'
-              name='limit'
-              onChange={this.handleLimitChange}
-              selectedValue={queryLimit}
-            >
-              <div className='radio-option'>
-                <Radio value='25' />
-                <label>25 devices</label>
-              </div>
-              <div className='radio-option'>
-                <Radio value='50' />
-                <label>50 devices</label>
-              </div>
-              <div className='radio-option'>
-                <Radio value='100' />
-                <label>100 devices</label>
-              </div>
-            </RadioGroup>
+            {this.renderSideMenu()}
           </GridItem>
           <GridItem className='chord-container' columnSpan={7}>
             {isLoading ? (
@@ -307,60 +308,80 @@ export default class MyNerdlet extends React.Component {
             )}
           </GridItem>
           <GridItem className='side-info' columnSpan={3}>
-            <table>
-              <tbody>
-                <tr>
-                  <td>
-                    <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
-                  </td>
-                  <td>
-                    <BlockText type={BlockText.TYPE.PARAGRAPH}>
-                      {selectedEntity || "All Devices"}
-                    </BlockText>
-                  </td>
-                </tr>
-                <tr>
-                  <td>&nbsp;</td>
-                  <td>
-                    <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
-                      Device
-                    </BlockText>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {this.renderDeviceHeader()}
             <Tabs defaultSelectedItem='flow-tab'>
               <TabsItem itemKey='flow-tab' label='flow summary'>
-                <Table compact striped>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
-                      <Table.HeaderCell>destination</Table.HeaderCell>
-                      <Table.HeaderCell>{this.state.queryAttribute}</Table.HeaderCell>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {detailData.map((r, k) => (
-                      <Table.Row key={k}>
-                        <Table.Cell>{r.source}</Table.Cell>
-                        <Table.Cell>{r.target}</Table.Cell>
-                        <Table.Cell>
-                          {queryAttribute === "throughput"
-                            ? bitsToSize(r.value)
-                            : intToSize(r.value)}
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table>
+                {this.renderFlowSummaryTable()}
               </TabsItem>
               <TabsItem itemKey='other-tab' label='device info'>
-                TODO: Link {selectedEntity} back to an Entity via NetworkSample
+                {this.renderDeviceInfo()}
               </TabsItem>
             </Tabs>
           </GridItem>
         </Grid>
       </div>
     );
+  }
+
+  renderDeviceHeader() {
+    const { selectedEntity } = this.state;
+
+    return (
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
+            </td>
+            <td>
+              <BlockText type={BlockText.TYPE.PARAGRAPH}>
+                {selectedEntity || "All Devices"}
+              </BlockText>
+            </td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>
+              <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
+                Device
+              </BlockText>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  }
+
+  renderFlowSummaryTable() {
+    const { detailData, queryAttribute } = this.state;
+
+    return (
+      <Table compact striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
+            <Table.HeaderCell>destination</Table.HeaderCell>
+            <Table.HeaderCell>{queryAttribute}</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {detailData.map((r, k) => (
+            <Table.Row key={k}>
+              <Table.Cell>{r.source}</Table.Cell>
+              <Table.Cell>{r.target}</Table.Cell>
+              <Table.Cell>
+                {queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value)}
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+    );
+  }
+
+  renderDeviceInfo() {
+    const { selectedEntity } = this.state;
+
+    return <BlockText>TODO: Link {selectedEntity} back to an Entity via NetworkSample</BlockText>;
   }
 }
