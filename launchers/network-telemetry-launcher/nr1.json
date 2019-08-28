@@ -3,6 +3,6 @@
   "id": "network-telemetry-launcher",
   "description": "Network Telemetry",
   "displayName": "Network Telemetry",
-  "icon": "interface_placeholders_icon-placeholder",
+  "icon": "hardware-&-software_software_node",
   "rootNerdletId": "38ea824d-60d8-4072-b6e8-ed96c26f5eaa.network-telemetry-overview"
 }
