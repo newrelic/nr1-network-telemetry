@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
+import AccountDropdown from "../../src/components/account-dropdown";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
 import { timeRangeToNrql } from "../../src/lib/time-range-to-nrql";
@@ -38,6 +39,7 @@ export default class MyNerdlet extends React.Component {
     super(props);
 
     this.state = {
+      account: {},
       detailData: [],
       entities: [],
       isLoading: true,
@@ -47,9 +49,14 @@ export default class MyNerdlet extends React.Component {
       selectedEntity: null,
     };
 
+    this.onAccountSelected = this.onAccountSelected.bind(this);
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
     this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
+  }
+
+  onAccountSelected(account) {
+    if (account) this.setState({ account });
   }
 
   componentDidMount() {
@@ -58,9 +65,10 @@ export default class MyNerdlet extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const { timeRange } = this.props.launcherUrlState;
-    const { queryAttribute, queryLimit } = this.state;
+    const { account, queryAttribute, queryLimit } = this.state;
 
     if (
+      account !== prevState.account ||
       queryAttribute !== prevState.queryAttribute ||
       queryLimit !== prevState.queryLimit ||
       timeRange !== (prevProps.launcherUrlState || {}).timeRange
@@ -73,14 +81,16 @@ export default class MyNerdlet extends React.Component {
    * fetch data
    */
   async fetchChordData() {
-    const { queryAttribute } = this.state;
+    const { account, queryAttribute } = this.state;
+
+    if (!account || !account.id) return;
 
     this.setState({ isLoading: true, detailData: [] });
 
     const results = await NerdGraphQuery.query({
       query: NERDGRAPH_NRQL_QUERY,
       variables: {
-        accountid: 1,
+        accountid: account.id,
         nrql: this.createNrqlQuery(),
       },
     });
@@ -229,6 +239,14 @@ export default class MyNerdlet extends React.Component {
       <div className='background'>
         <Grid className='fullheight'>
           <GridItem className='side-menu' columnSpan={2}>
+            <BlockText type={BlockText.TYPE.NORMAL}>
+              <strong>Account</strong>
+            </BlockText>
+            <AccountDropdown
+              className='account-dropdown'
+              onSelect={this.onAccountSelected}
+              urlState={this.props.nerdletUrlState}
+            />
             <BlockText type={BlockText.TYPE.NORMAL}>
               <strong>Show devices with...</strong>
             </BlockText>
