@@ -1,37 +1,74 @@
-import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
 import { AccountDropdown } from "../../src/components/account-dropdown";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
 import { timeRangeToNrql } from "../../src/components/time-range";
+import PropTypes from "prop-types";
 import {
+  Button,
   BlockText,
-  Tabs,
-  TabsItem,
-  Icon,
-  List,
-  ListItem,
+  ChartGroup,
+  LineChart,
   Grid,
   GridItem,
-  HeadingText,
+  Modal,
   Spinner,
+  Stack,
+  StackItem,
+  HeadingText,
 } from "nr1";
-import { RadioGroup, Radio } from "react-radio-group";
+import { AccountDropdown } from "nr1-commune";
 import { fetchNrqlResults } from "../../src/lib/nrql";
+import { Sankey } from "react-vis";
+import { RadioGroup, Radio } from "react-radio-group";
+import { Table } from "semantic-ui-react";
+import { bitsToSize } from "../../src/lib/bytes-to-size";
 import { renderDeviceHeader } from "../common";
 
 import * as d3 from "d3";
 
-const COLOR_START = "#11A893";
+const BLURRED_LINK_OPACITY = 0.3;
+const FOCUSED_LINK_OPACITY = 0.6;
 const COLOR_END = "#FFC400";
+const COLOR_START = "#3ED2F2";
+const COLORS = [
+  "#11A893",
+  "#00B3D7",
+  "#FFC400",
+  "#A45AC1",
+  "#83CB4E",
+  "#FA6E37",
+  "#C40685",
 
-export default class NetworkTelemetryOverview extends React.Component {
+  "#4ACAB7",
+  "#3ED2F2",
+  "#FFDD78",
+  "#C07DDB",
+  "#A2E572",
+  "#FF9269",
+  "#E550B0",
+
+  "#0E7365",
+  "#0189A4",
+  "#CE9E00",
+  "#79428E",
+  "#63973A",
+  "#C6562C",
+  "#910662",
+];
+
+const NRQL_IPFIX_WHERE =
+  " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
+  " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +
+  " OR (bgpSourceAsNumber > 4294967294)";
+
+export default class Ipfix extends React.Component {
   static propTypes = {
-    height: PropTypes.number,
-    launcherUrlState: PropTypes.object,
     nerdletUrlState: PropTypes.object,
+    launcherUrlState: PropTypes.object,
     width: PropTypes.number,
+    height: PropTypes.number,
   };
 
   constructor(props) {
@@ -39,93 +76,98 @@ export default class NetworkTelemetryOverview extends React.Component {
 
     this.state = {
       account: {},
-      detailData: [],
-      entities: [],
+      activeLink: null,
+      enabled: false,
+      detailData: null,
+      intervalSeconds: 30,
       isLoading: true,
-      queryAttribute: "throughput",
-      queryLimit: "50",
-      relationships: [],
-      selectedEntity: null,
+      links: [],
+      nodeSummary: [],
+      nodes: [],
+      peerBy: "peerName",
+      reset: false,
+      hideDetail: true,
+      detailPaused: false,
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
-    this.handleAttributeChange = this.handleAttributeChange.bind(this);
-    this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
-    this.handleLimitChange = this.handleLimitChange.bind(this);
-  }
-
-  componentDidMount() {
-    this.fetchChordData();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { timeRange } = this.props.launcherUrlState;
-    const { account, queryAttribute, queryLimit } = this.state;
-
-    if (
-      account !== prevState.account ||
-      queryAttribute !== prevState.queryAttribute ||
-      queryLimit !== prevState.queryLimit ||
-      timeRange !== (prevProps.launcherUrlState || {}).timeRange
-    ) {
-      this.fetchChordData();
-    }
+    this.handlePeerByChange = this.handlePeerByChange.bind(this);
+    this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
+    this.handleSankeyLinkClick = this.handleSankeyLinkClick.bind(this);
+    this.handleDetailClose = this.handleDetailClose.bind(this);
   }
 
   /*
-   * fetch data
+   * React Lifecycle
    */
-  async fetchChordData() {
-    const { account, queryAttribute } = this.state;
+  componentDidMount() {}
 
-    if (!account || !account.id) return;
+  startTimer() {
+    const { intervalSeconds } = this.state;
 
-    this.setState({ isLoading: true, detailData: [] });
+    this.fetchIpfixData();
+    this.refresh = setInterval(async () => {
+      this.fetchIpfixData();
+    }, intervalSeconds * 1000);
+  }
 
-    const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
+  stopTimer() {
+    if (this.refresh) clearInterval(this.refresh);
+  }
 
-    let entities = [];
-    let detailData = [];
+  async resetTimer() {
+    await this.setState({ enabled: false, isLoading: true, reset: true });
+    this.stopTimer();
+    this.setState({ enabled: true });
+    this.startTimer();
+    this.setState({ isLoading: false });
+  }
 
-    const data = results.reduce((acc, d) => {
-      const source = d.facet[0];
-      const target = d.facet[1];
+  /*
+   * Helper functions
+   */
+  handleSankeyLinkClick(detailData, evt) {
+    const { enabled } = this.state;
 
-      if (entities.indexOf(source) === -1) entities.push(source);
-      const s = entities.indexOf(source);
+    // Track that the detail paused things
+    if (enabled) this.setState({ enabled: false, detailPaused: true });
 
-      if (entities.indexOf(target) === -1) entities.push(target);
-      const t = entities.indexOf(target);
+    this.setState({ detailData, hideDetail: false });
+  }
 
-      if (!Array.isArray(acc[s])) acc[s] = [];
+  handleDetailClose() {
+    const { detailPaused } = this.state;
 
-      const value = d["value"] || 0;
-      acc[s][t] = value;
-      detailData.push({ source, target, value });
+    // If showing the detail caused the pause, unpause, otherwise return
+    // with a paused state
+    if (detailPaused) this.setState({ enabled: true, detailPaused: false });
 
-      return acc;
-    }, []);
+    this.setState({ hideDetail: true });
+  }
 
-    const entityCount = entities.length;
-    const colorFunc = this.colorForEntity(entityCount);
-
-    let entityColors = [];
-    let relationships = [];
-    for (let y = 0; y < entityCount; y++) {
-      entityColors.push(colorFunc(y));
-      relationships[y] = [];
-      for (let x = 0; x < entityCount; x++) {
-        relationships[y][x] = (data[y] || [])[x] || 0;
-      }
+  async handleAccountChange(account) {
+    if (account) {
+      await this.setState({ account });
+      this.resetTimer();
+      this.setState({ enabled: true });
     }
+  }
 
-    this.setState({
-      detailData,
-      entities,
-      entityColors,
-      isLoading: false,
-      relationships,
-    });
+  async handlePeerByChange(peerBy) {
+    if (peerBy) {
+      await this.setState({ peerBy });
+      this.resetTimer();
+    }
+  }
+
+  handleIntervalSecondsChange(evt) {
+    const intervalSeconds = (evt.target || {}).value || 3;
+
+    if (intervalSeconds > 3) {
+      this.stopTimer();
+      this.setState({ intervalSeconds });
+      this.startTimer();
+    }
   }
 
   // Returns a FUNCTION that generates a color...
@@ -137,79 +179,164 @@ export default class NetworkTelemetryOverview extends React.Component {
       .range([d3.rgb(COLOR_START), d3.rgb(COLOR_END)]);
   }
 
-  createNrqlQuery() {
-    const { queryAttribute, queryLimit } = this.state;
-
-    let attr = "sum(scaledByteCount * 8)";
-    if (queryAttribute === "count") {
-      attr = "count(*)";
-    }
+  createSankeyNrqlQuery() {
+    const { peerBy, intervalSeconds } = this.state;
 
     return (
-      "FROM sflow" +
-      " SELECT " +
-      attr +
-      " as 'value'" +
-      " FACET networkSourceAddress, networkDestinationAddress" +
-      " LIMIT " +
-      queryLimit +
-      " " +
-      timeRangeToNrql(this.props.launcherUrlState)
+      "FROM ipfix" +
+      " SELECT sum(octetDeltaCount * 64000) as 'value'" +
+      NRQL_IPFIX_WHERE +
+      " FACET " +
+      peerBy +
+      ", agent, destinationIPv4Address" +
+      " SINCE " +
+      intervalSeconds +
+      " seconds ago" +
+      " LIMIT 50"
     );
   }
 
-  handleAccountChange(account) {
-    if (account) this.setState({ account });
-  }
+  async fetchIpfixData() {
+    const { account, enabled, reset } = this.state;
 
-  handleAttributeChange(attr) {
-    if (attr === "count" || attr === "throughput") {
-      this.setState({ queryAttribute: attr });
+    if (!enabled || !account || !account.id) return;
+
+    const nodeSummary = reset ? [] : this.state.nodeSummary;
+    if (reset) this.setState({ reset: false });
+
+    const results = await fetchNrqlResults(account.id, this.createSankeyNrqlQuery());
+
+    // Bail if we get nothing
+    if (results.length < 1) {
+      return;
     }
+
+    let links = [];
+    let nodes = [];
+
+    results.forEach(row => {
+      // Collect nodes
+      const ids = (row.facet || []).map(f => {
+        const id = nodes.findIndex(node => node.name === f);
+        if (id < 0) return nodes.push({ name: f }) - 1;
+
+        return id;
+      });
+
+      const value = row.value;
+      let sourceId = nodeSummary.findIndex(node => node.name === nodes[ids[0]].name);
+      if (sourceId >= 0) {
+        nodeSummary[sourceId].value += value;
+      } else {
+        sourceId =
+          nodeSummary.push({
+            color: COLORS[nodeSummary.length % COLORS.length],
+            name: nodes[ids[0]].name,
+            value,
+          }) - 1;
+      }
+
+      // Update existing links (AS => Router)
+      const sa = links.findIndex(link => link.source === ids[0] && link.target === ids[1]);
+      if (sa >= 0) {
+        links[sa].value += value;
+      } else {
+        links.push({
+          source: ids[0],
+          target: ids[1],
+          value,
+          color: nodeSummary[sourceId].color,
+          sourceId,
+        });
+      }
+
+      // Update existing links (Router => IP)
+      const ad = links.findIndex(link => link.source === ids[1] && link.target === ids[2]);
+      if (ad >= 0) {
+        links[ad].value += value;
+      } else {
+        links.push({
+          source: ids[1],
+          target: ids[2],
+          value,
+          color: nodeSummary[sourceId].color,
+          sourceId,
+        });
+      }
+    });
+
+    this.setState({
+      isLoading: false,
+      links,
+      nodeSummary,
+      nodes,
+    });
   }
 
-  handleLimitChange(limit) {
-    if (limit > 0 && limit <= 100) {
-      this.setState({ queryLimit: limit });
-    }
-  }
+  /*
+   * Main render
+   */
+  renderDetailCard() {
+    const { account, detailData, hideDetail, peerBy } = this.state;
 
-  handleChartGroupClick(id) {
-    const { entities, relationships, selectedEntity } = this.state;
+    const throughputQuery =
+      "FROM ipfix" +
+      " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
+      NRQL_IPFIX_WHERE +
+      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
+      " TIMESERIES";
 
-    const newEntity = entities[id];
+    const destQuery =
+      "FROM ipfix" +
+      " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
+      NRQL_IPFIX_WHERE +
+      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
+      " FACET destinationIPv4Address " +
+      " TIMESERIES";
 
-    // Unselect on repeated click
-    if (newEntity === selectedEntity) {
-      // all rows, all columns
-      const detailData = relationships.flatMap(row =>
-        row.reduce((acc, r, k) => {
-          if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-          return acc;
-        }, [])
-      );
-      this.setState({ detailData, selectedEntity: "" });
-    } else {
-      // id row, all columns
-      const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
-        if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-        return acc;
-      }, []);
+    const protocolQuery =
+      "FROM ipfix" +
+      " SELECT count(*) as 'flows'" +
+      NRQL_IPFIX_WHERE +
+      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
+      " FACET cases(" +
+      "   WHERE protocolIdentifier = 1 as 'ICMP', " +
+      "   WHERE protocolIdentifier = 6 as 'TCP'," +
+      "   WHERE protocolIdentifier = 17 as 'UDP'," +
+      "   WHERE protocolIdentifier IS NOT NULL as 'other')" +
+      " TIMESERIES";
 
-      // all rows, id column
-      const targetIds = relationships.reduce((acc, r, k) => {
-        if (r[id] !== 0) acc.push({ source: newEntity, target: entities[k], value: r[id] });
-        return acc;
-      }, []);
-
-      this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity: newEntity });
-    }
-  }
-
-  renderSideMenu() {
-    const { queryAttribute, queryLimit } = this.state;
     return (
-      <>
+      <Modal hidden={this.state.hideDetail} onClose={this.handleDetailClose}>
+        <div className='side-menu'>
+          <ChartGroup>
+            {renderDeviceHeader(((detailData || {}).source || {}).name, "Network Entity")}
+
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
+            <LineChart
+              accountId={account.id || null}
+              style={{ height: 200 }}
+              query={throughputQuery}
+            />
+
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
+            <LineChart accountId={account.id || null} style={{ height: 200 }} query={destQuery} />
+
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
+            <LineChart
+              accountId={account.id || null}
+              style={{ height: 200 }}
+              query={protocolQuery}
+            />
+          </ChartGroup>
+        </div>
+      </Modal>
+    );
+  }
+  renderOverallMenu() {
+    const { intervalSeconds, peerBy } = this.state;
+    return (
+      <div className='side-menu'>
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Account</strong>
         </BlockText>
@@ -218,127 +345,191 @@ export default class NetworkTelemetryOverview extends React.Component {
           onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
         />
+        <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Show devices with...</strong>
+          <strong>Refresh interval: {intervalSeconds}</strong>
+        </BlockText>
+        <br />
+        <span>
+          3s
+          <input
+            type='range'
+            min='3'
+            max='60'
+            value={intervalSeconds}
+            onChange={this.handleIntervalSecondsChange}
+            className='slider'
+            id='intervalSeconds'
+            step='1'
+          />
+          60 s
+        </span>
+        &nbsp;
+        <Button
+          onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
+          sizeType={Button.SIZE_TYPE.SLIM}
+          iconType={
+            this.state.enabled
+              ? Button.ICON_TYPE.INTERFACE__STATE__PRIVATE
+              : Button.ICON_TYPE.INTERFACE__CARET__CARET_RIGHT__V_ALTERNATE
+          }
+        />
+      </div>
+    );
+  }
+  renderSideMenu() {
+    const { intervalSeconds, peerBy } = this.state;
+
+    return (
+      <div className='side-menu'>
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Show peers by...</strong>
         </BlockText>
         <RadioGroup
           className='radio-group'
-          name='attribute'
-          onChange={this.handleAttributeChange}
-          selectedValue={queryAttribute}
+          name='peerBy'
+          onChange={this.handlePeerByChange}
+          selectedValue={peerBy}
         >
           <div className='radio-option'>
-            <Radio value='throughput' />
-            <label>Highest Throughput</label>
+            <Radio value='peerName' />
+            <label>Peer Name</label>
           </div>
           <div className='radio-option'>
-            <Radio value='count' />
-            <label>Most flows collected</label>
+            <Radio value='bgpSourceAsNumber' />
+            <label>AS Number</label>
           </div>
         </RadioGroup>
         <br />
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Limit results to...</strong>
-        </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='limit'
-          onChange={this.handleLimitChange}
-          selectedValue={queryLimit}
-        >
-          <div className='radio-option'>
-            <Radio value='25' />
-            <label>25 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='50' />
-            <label>50 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='100' />
-            <label>100 devices</label>
-          </div>
-        </RadioGroup>
-      </>
-    );
-  }
-
-  render() {
-    const { entities, entityColors, isLoading, relationships, selectedEntity } = this.state;
-    const width = 600;
-    const height = 700;
-    const outerRadius = Math.min(height, width) * 0.5 - 100;
-    const innerRadius = outerRadius - 10;
-
-    return (
-      <div className='background'>
-        <Grid className='fullheight'>
-          <GridItem className='side-menu' columnSpan={2}>
-            {this.renderSideMenu()}
-          </GridItem>
-          <GridItem className='chord-container' columnSpan={7}>
-            {isLoading ? (
-              <Spinner fillContainer />
-            ) : (
-              <ChordDiagram
-                componentId={1}
-                groupColors={entityColors}
-                groupLabels={entities}
-                height={height}
-                innerRadius={innerRadius}
-                matrix={relationships}
-                outerRadius={outerRadius}
-                width={width}
-                groupOnClick={this.handleChartGroupClick}
-              />
-            )}
-          </GridItem>
-          <GridItem className='side-info' columnSpan={3}>
-            {renderDeviceHeader(selectedEntity)}
-            <Tabs defaultSelectedItem='flow-tab'>
-              <TabsItem itemKey='flow-tab' label='flow summary'>
-                {this.renderFlowSummaryTable()}
-              </TabsItem>
-              <TabsItem itemKey='other-tab' label='device info'>
-                {this.renderDeviceInfo()}
-              </TabsItem>
-            </Tabs>
-          </GridItem>
-        </Grid>
       </div>
     );
   }
 
-  renderFlowSummaryTable() {
-    const { detailData, queryAttribute } = this.state;
+  render() {
+    const { activeLink, links, nodes, isLoading } = this.state;
+
+    console.log(activeLink);
+
+    // Add link highlighting
+    const renderLinks = links.map((link, linkIndex) => {
+      let opacity = BLURRED_LINK_OPACITY;
+
+      if (activeLink) {
+        // I'm the hovered link
+        if (linkIndex === activeLink.index) {
+          console.log(link);
+          opacity = FOCUSED_LINK_OPACITY;
+        } else {
+          // let's recurse
+          const myLinks = [
+            ...((activeLink.source || {}).targetLinks || []),
+            ...((activeLink.target || {}).sourceLinks || []),
+          ];
+          if (myLinks) {
+            myLinks.forEach(t => {
+              if (t.index === linkIndex && t.sourceId === activeLink.sourceId)
+                opacity = FOCUSED_LINK_OPACITY;
+            });
+          }
+        }
+      }
+
+      return { ...link, opacity };
+    });
 
     return (
-      <Table compact striped>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
-            <Table.HeaderCell>destination</Table.HeaderCell>
-            <Table.HeaderCell>{queryAttribute}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {detailData.map((r, k) => (
-            <Table.Row key={k}>
-              <Table.Cell>{r.source}</Table.Cell>
-              <Table.Cell>{r.target}</Table.Cell>
-              <Table.Cell>
-                {queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+      <>
+        {this.renderDetailCard()}
+        <div className='background'>
+          <Grid className='fullheight'>
+            <GridItem columnSpan={2}>
+              <Stack
+                directionType={Stack.DIRECTION_TYPE.VERTICAL}
+                alignmentType={Stack.ALIGNMENT_TYPE.FILL}
+              >
+                <StackItem>{this.renderOverallMenu()}</StackItem>
+                <StackItem>{this.renderSideMenu()}</StackItem>
+              </Stack>
+            </GridItem>
+            <GridItem className='sankey-container' columnSpan={7}>
+              {isLoading ? (
+                <Spinner fillContainer />
+              ) : (
+                <Sankey
+                  nodes={nodes}
+                  links={renderLinks}
+                  width={700}
+                  height={700}
+                  onLinkClick={this.handleSankeyLinkClick}
+                  onLinkMouseOver={node => this.setState({ activeLink: node })}
+                  onLinkMouseOut={() => this.setState({ activeLink: null })}
+                />
+              )}
+            </GridItem>
+            <GridItem className='side-info' columnSpan={3}>
+              {this.renderSummaryInfo()}
+            </GridItem>
+          </Grid>
+        </div>
+        <div className='background'>
+          {this.renderDetailCard()}
+          <Grid className='fullheight'>
+            <GridItem className='side-menu' columnSpan={2}>
+              {this.renderSideMenu()}
+            </GridItem>
+            <GridItem className='sankey-container' columnSpan={7}>
+              {isLoading ? (
+                <Spinner fillContainer />
+              ) : (
+                <Sankey
+                  nodes={nodes}
+                  links={renderLinks}
+                  width={700}
+                  height={700}
+                  onLinkClick={this.handleSankeyLinkClick}
+                  onLinkMouseOver={node => this.setState({ activeLink: node })}
+                  onLinkMouseOut={() => this.setState({ activeLink: null })}
+                />
+              )}
+            </GridItem>
+            <GridItem className='side-info' columnSpan={3}>
+              {this.renderSummaryInfo()}
+            </GridItem>
+          </Grid>
+        </div>
+      </>
     );
   }
 
-  renderDeviceInfo() {
-    const { selectedEntity } = this.state;
+  renderSummaryInfo() {
+    const { nodeSummary } = this.state;
 
-    return <BlockText>TODO: Link {selectedEntity} back to an Entity via NetworkSample</BlockText>;
+    return (
+      <>
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Summary</strong>
+        </BlockText>
+        <Table compact striped>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>&nbsp;</Table.HeaderCell>
+              <Table.HeaderCell>Source</Table.HeaderCell>
+              <Table.HeaderCell>Throughput</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {nodeSummary
+              .sort((a, b) => (a.value < b.value ? 1 : -1))
+              .map((n, k) => (
+                <Table.Row key={k}>
+                  <Table.Cell style={{ color: n.color }}>*</Table.Cell>
+                  <Table.Cell>{n.name || "(Unknown)"}</Table.Cell>
+                  <Table.Cell>{bitsToSize(n.value)}</Table.Cell>
+                </Table.Row>
+              ))}
+          </Table.Body>
+        </Table>
+      </>
+    );
   }
 }
