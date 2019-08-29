@@ -21,29 +21,33 @@ import { renderDeviceHeader } from "../common";
 
 import * as d3 from "d3";
 
+const BLURRED_LINK_OPACITY = 0.3;
+const FOCUSED_LINK_OPACITY = 0.6;
 const COLOR_END = "#FFC400";
 const COLOR_START = "#3ED2F2";
 const COLORS = [
   "#11A893",
-  "#4ACAB7",
-  "#0E7365",
   "#00B3D7",
-  "#3ED2F2",
-  "#0189A4",
   "#FFC400",
-  "#FFDD78",
-  "#CE9E00",
   "#A45AC1",
-  "#C07DDB",
-  "#79428E",
   "#83CB4E",
-  "#A2E572",
-  "#63973A",
   "#FA6E37",
-  "#FF9269",
-  "#C6562C",
   "#C40685",
+
+  "#4ACAB7",
+  "#3ED2F2",
+  "#FFDD78",
+  "#C07DDB",
+  "#A2E572",
+  "#FF9269",
   "#E550B0",
+
+  "#0E7365",
+  "#0189A4",
+  "#CE9E00",
+  "#79428E",
+  "#63973A",
+  "#C6562C",
   "#910662",
 ];
 
@@ -65,9 +69,10 @@ export default class Ipfix extends React.Component {
 
     this.state = {
       account: {},
+      activeLink: null,
       enabled: false,
       detailData: null,
-      intervalSeconds: 5,
+      intervalSeconds: 30,
       isLoading: true,
       links: [],
       nodeSummary: [],
@@ -88,22 +93,27 @@ export default class Ipfix extends React.Component {
   /*
    * React Lifecycle
    */
-  componentDidMount() {
-    this.startTimer();
-  }
+  componentDidMount() {}
 
   startTimer() {
     const { intervalSeconds } = this.state;
 
+    this.fetchIpfixData();
     this.refresh = setInterval(async () => {
-      if (this.state.enabled) {
-        this.fetchIpfixData();
-      }
+      this.fetchIpfixData();
     }, intervalSeconds * 1000);
   }
 
   stopTimer() {
-    clearInterval(this.refresh);
+    if (this.refresh) clearInterval(this.refresh);
+  }
+
+  async resetTimer() {
+    await this.setState({ enabled: false, isLoading: true, reset: true });
+    this.stopTimer();
+    this.setState({ enabled: true });
+    this.startTimer();
+    this.setState({ isLoading: false });
   }
 
   /*
@@ -128,18 +138,18 @@ export default class Ipfix extends React.Component {
     this.setState({ hideDetail: true });
   }
 
-  handleAccountChange(account) {
+  async handleAccountChange(account) {
     if (account) {
-      this.setState({ account, enabled: true, reset: false });
+      await this.setState({ account });
+      this.resetTimer();
+      this.setState({ enabled: true });
     }
   }
 
   async handlePeerByChange(peerBy) {
     if (peerBy) {
-      this.stopTimer();
-      await this.setState({ peerBy, isLoading: true, enabled: false, reset: true });
-      this.startTimer();
-      this.setState({ isLoading: false, enabled: true });
+      await this.setState({ peerBy });
+      this.resetTimer();
     }
   }
 
@@ -180,9 +190,9 @@ export default class Ipfix extends React.Component {
   }
 
   async fetchIpfixData() {
-    const { account, reset } = this.state;
+    const { account, enabled, reset } = this.state;
 
-    if (!account || !account.id) return;
+    if (!enabled || !account || !account.id) return;
 
     const nodeSummary = reset ? [] : this.state.nodeSummary;
     if (reset) this.setState({ reset: false });
@@ -207,11 +217,11 @@ export default class Ipfix extends React.Component {
       });
 
       const value = row.value;
-      let sId = nodeSummary.findIndex(node => node.name === nodes[ids[0]].name);
-      if (sId >= 0) {
-        nodeSummary[sId].value += value;
+      let sourceId = nodeSummary.findIndex(node => node.name === nodes[ids[0]].name);
+      if (sourceId >= 0) {
+        nodeSummary[sourceId].value += value;
       } else {
-        sId =
+        sourceId =
           nodeSummary.push({
             color: COLORS[nodeSummary.length % COLORS.length],
             name: nodes[ids[0]].name,
@@ -224,7 +234,13 @@ export default class Ipfix extends React.Component {
       if (sa >= 0) {
         links[sa].value += value;
       } else {
-        links.push({ source: ids[0], target: ids[1], value, color: nodeSummary[sId].color });
+        links.push({
+          source: ids[0],
+          target: ids[1],
+          value,
+          color: nodeSummary[sourceId].color,
+          sourceId,
+        });
       }
 
       // Update existing links (Router => IP)
@@ -232,7 +248,13 @@ export default class Ipfix extends React.Component {
       if (ad >= 0) {
         links[ad].value += value;
       } else {
-        links.push({ source: ids[1], target: ids[2], value, color: nodeSummary[sId].color });
+        links.push({
+          source: ids[1],
+          target: ids[2],
+          value,
+          color: nodeSummary[sourceId].color,
+          sourceId,
+        });
       }
     });
 
@@ -279,22 +301,28 @@ export default class Ipfix extends React.Component {
 
     return (
       <Modal hidden={this.state.hideDetail} onClose={this.handleDetailClose}>
-        <ChartGroup>
-          {renderDeviceHeader(((detailData || {}).source || {}).name, "Network Entity")}
+        <div className='side-menu'>
+          <ChartGroup>
+            {renderDeviceHeader(((detailData || {}).source || {}).name, "Network Entity")}
 
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
-          <LineChart
-            accountId={account.id || null}
-            style={{ height: 200 }}
-            query={throughputQuery}
-          />
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
+            <LineChart
+              accountId={account.id || null}
+              style={{ height: 200 }}
+              query={throughputQuery}
+            />
 
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
-          <LineChart accountId={account.id || null} style={{ height: 200 }} query={destQuery} />
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
+            <LineChart accountId={account.id || null} style={{ height: 200 }} query={destQuery} />
 
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
-          <LineChart accountId={account.id || null} style={{ height: 200 }} query={protocolQuery} />
-        </ChartGroup>
+            <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
+            <LineChart
+              accountId={account.id || null}
+              style={{ height: 200 }}
+              query={protocolQuery}
+            />
+          </ChartGroup>
+        </div>
       </Modal>
     );
   }
@@ -356,7 +384,36 @@ export default class Ipfix extends React.Component {
   }
 
   render() {
-    const { links, nodes, isLoading } = this.state;
+    const { activeLink, links, nodes, isLoading } = this.state;
+
+    console.log(activeLink);
+
+    // Add link highlighting
+    const renderLinks = links.map((link, linkIndex) => {
+      let opacity = BLURRED_LINK_OPACITY;
+
+      if (activeLink) {
+        // I'm the hovered link
+        if (linkIndex === activeLink.index) {
+          console.log(link);
+          opacity = FOCUSED_LINK_OPACITY;
+        } else {
+          // let's recurse
+          const myLinks = [
+            ...((activeLink.source || {}).targetLinks || []),
+            ...((activeLink.target || {}).sourceLinks || []),
+          ];
+          if (myLinks) {
+            myLinks.forEach(t => {
+              if (t.index === linkIndex && t.sourceId === activeLink.sourceId)
+                opacity = FOCUSED_LINK_OPACITY;
+            });
+          }
+        }
+      }
+
+      return { ...link, opacity };
+    });
 
     return (
       <div className='background'>
@@ -371,10 +428,12 @@ export default class Ipfix extends React.Component {
             ) : (
               <Sankey
                 nodes={nodes}
-                links={links}
+                links={renderLinks}
                 width={700}
                 height={700}
                 onLinkClick={this.handleSankeyLinkClick}
+                onLinkMouseOver={node => this.setState({ activeLink: node })}
+                onLinkMouseOut={() => this.setState({ activeLink: null })}
               />
             )}
           </GridItem>
@@ -406,7 +465,7 @@ export default class Ipfix extends React.Component {
               .sort((a, b) => (a.value < b.value ? 1 : -1))
               .map((n, k) => (
                 <Table.Row key={k} style={{ color: n.color }}>
-                  <Table.Cell>{n.name}</Table.Cell>
+                  <Table.Cell>{n.name || "(Unknown)"}</Table.Cell>
                   <Table.Cell>{bitsToSize(n.value)}</Table.Cell>
                 </Table.Row>
               ))}
