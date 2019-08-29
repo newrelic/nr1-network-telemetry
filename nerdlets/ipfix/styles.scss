@@ -1,11 +1,10 @@
 @import "../common/styles.scss";
-@import url("//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css");
 
-.chord-chart {
+.sankey-chart {
   font-size: 10px;
 }
 
-.chord-container {
+.sankey-container {
   -webkit-box-align: top;
   -webkit-justify-content: center;
   align-items: top;
@@ -13,5 +12,6 @@
   display: flex;
   height: 100%;
   justify-content: center;
+  overflow: hidden;
   width: 100%;
 }

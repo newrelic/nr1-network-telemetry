@@ -32,11 +32,13 @@
     },
     "dependencies": {
         "d3": "^5.11.0",
+        "nr1-commune": "github:newrelic/nr1-commune",
         "prop-types": "^15.6.2",
         "react": "^16.6.3",
         "react-chord-diagram": "^1.3.0",
         "react-dom": "^16.6.3",
         "react-radio-group": "^3.0.3",
+        "react-vis": "^1.11.7",
         "semantic-ui-react": "^0.88.0"
     },
     "browserslist": [
@@ -56,6 +58,7 @@
         "@typescript-eslint/experimental-utils": "^2.0.0",
         "@typescript-eslint/parser": "^2.0.0",
         "babel-core": "^6.26.3",
+        "babel-eslint": "^10.0.3",
         "babel-jest": "^24.9.0",
         "babel-plugin-add-react-displayname": "0.0.5",
         "check-node-version": "^4.0.1",
@@ -63,7 +66,9 @@
         "enzyme-adapter-react-16": "^1.14.0",
         "eslint": "^6.2.2",
         "eslint-config-prettier": "^6.1.0",
+        "eslint-config-react": "^1.1.7",
         "eslint-config-standard": "^14.0.1",
+        "eslint-plugin-babel": "^5.3.0",
         "eslint-plugin-filenames": "^1.3.2",
         "eslint-plugin-import": "^2.18.2",
         "eslint-plugin-jasmine": "^2.10.1",
