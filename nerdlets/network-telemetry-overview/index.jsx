@@ -19,6 +19,7 @@ import {
 } from "nr1";
 import { RadioGroup, Radio } from "react-radio-group";
 import { fetchNrqlResults } from "../../src/lib/nrql";
+import { renderDeviceHeader } from "../common";
 
 import * as d3 from "d3";
 
@@ -263,7 +264,7 @@ export default class NetworkTelemetryOverview extends React.Component {
   }
 
   render() {
-    const { entities, entityColors, isLoading, relationships } = this.state;
+    const { entities, entityColors, isLoading, relationships, selectedEntity } = this.state;
     const width = 600;
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
@@ -293,7 +294,7 @@ export default class NetworkTelemetryOverview extends React.Component {
             )}
           </GridItem>
           <GridItem className='side-info' columnSpan={3}>
-            {this.renderDeviceHeader()}
+            {renderDeviceHeader(selectedEntity)}
             <Tabs defaultSelectedItem='flow-tab'>
               <TabsItem itemKey='flow-tab' label='flow summary'>
                 {this.renderFlowSummaryTable()}
@@ -305,35 +306,6 @@ export default class NetworkTelemetryOverview extends React.Component {
           </GridItem>
         </Grid>
       </div>
-    );
-  }
-
-  renderDeviceHeader() {
-    const { selectedEntity } = this.state;
-
-    return (
-      <table>
-        <tbody>
-          <tr>
-            <td>
-              <Icon type={Icon.TYPE.HARDWARE_AND_SOFTWARE__HARDWARE__NETWORK} />
-            </td>
-            <td>
-              <BlockText type={BlockText.TYPE.PARAGRAPH}>
-                {selectedEntity || "All Devices"}
-              </BlockText>
-            </td>
-          </tr>
-          <tr>
-            <td>&nbsp;</td>
-            <td>
-              <BlockText className='minor-heading' type={BlockText.TYPE.NORMAL}>
-                Device
-              </BlockText>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     );
   }
 
