@@ -35,6 +35,10 @@ export const COLORS = [
   "#910662",
 ];
 
+export const NRQL_QUERY_LIMIT_DEFAULT = 50;
+export const NRQL_QUERY_LIMIT_MIN = 1;
+export const NRQL_QUERY_LIMIT_MAX = 100;
+
 export const NRQL_IPFIX_WHERE =
   " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
   " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +

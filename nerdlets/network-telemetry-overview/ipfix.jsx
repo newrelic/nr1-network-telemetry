@@ -22,18 +22,26 @@ import { renderDeviceHeader } from "./common";
 
 import * as d3 from "d3";
 
-import { BLURRED_LINK_OPACITY, COLORS, FOCUSED_LINK_OPACITY, NRQL_IPFIX_WHERE } from "./constants";
+import {
+  NRQL_QUERY_LIMIT_DEFAULT,
+  BLURRED_LINK_OPACITY,
+  COLORS,
+  FOCUSED_LINK_OPACITY,
+  NRQL_IPFIX_WHERE,
+} from "./constants";
 
 export default class Ipfix extends React.Component {
   static propTypes = {
     account: PropTypes.object.isRequired,
-    intervalSeconds: PropTypes.number,
     height: PropTypes.number,
+    intervalSeconds: PropTypes.number,
+    queryLimit: PropTypes.number,
     width: PropTypes.number,
   };
 
   static defaultProps = {
     intervalSeconds: 30,
+    queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     height: 650,
     width: 700,
   };
@@ -63,9 +71,15 @@ export default class Ipfix extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { account } = this.props;
+    const { account, intervalSeconds, queryLimit } = this.props;
+    const { peerBy } = this.state;
 
-    if (account.id !== prevProps.account.id) {
+    if (
+      account.id !== prevProps.account.id ||
+      intervalSeconds !== prevProps.intervalSeconds ||
+      queryLimit !== prevProps.queryLimit ||
+      peerBy !== prevState.peerBy
+    ) {
       this.fetchIpfixData();
     }
   }
@@ -89,7 +103,7 @@ export default class Ipfix extends React.Component {
   }
 
   createSankeyNrqlQuery() {
-    const { intervalSeconds } = this.props;
+    const { intervalSeconds, queryLimit } = this.props;
     const { peerBy } = this.state;
 
     return (
@@ -102,7 +116,8 @@ export default class Ipfix extends React.Component {
       " SINCE " +
       intervalSeconds +
       " seconds ago" +
-      " LIMIT 50"
+      " LIMIT " +
+      queryLimit
     );
   }
 

@@ -5,36 +5,27 @@ import { AccountDropdown } from "nr1-commune";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
 import { timeRangeToNrql } from "nr1-commune";
-import {
-  BlockText,
-  Tabs,
-  TabsItem,
-  Icon,
-  List,
-  ListItem,
-  Grid,
-  GridItem,
-  HeadingText,
-  Spinner,
-} from "nr1";
+import { BlockText, Icon, List, ListItem, Grid, GridItem, HeadingText, Spinner } from "nr1";
 import { RadioGroup, Radio } from "react-radio-group";
 import { fetchNrqlResults } from "../../src/lib/nrql";
-import { renderDeviceHeader } from "./common";
 
 import * as d3 from "d3";
 
-const COLOR_START = "#11A893";
-const COLOR_END = "#FFC400";
+import { COLOR_END, COLOR_START, NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
 
 export default class Sflow extends React.Component {
   static propTypes = {
     account: PropTypes.object.isRequired,
-    timeRange: PropTypes.object.isRequired,
+    configRenderer: PropTypes.func,
     height: PropTypes.number,
+    queryLimit: PropTypes.number,
+    summaryRenderer: PropTypes.func,
+    timeRange: PropTypes.object.isRequired,
     width: PropTypes.number,
   };
 
   static defaultProps = {
+    queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     height: 650,
     width: 700,
   };
@@ -47,14 +38,12 @@ export default class Sflow extends React.Component {
       entities: [],
       isLoading: true,
       queryAttribute: "throughput",
-      queryLimit: "50",
       relationships: [],
       selectedEntity: null,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
     this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
-    this.handleLimitChange = this.handleLimitChange.bind(this);
   }
 
   componentDidMount() {
@@ -62,13 +51,13 @@ export default class Sflow extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { account, timeRange } = this.props;
-    const { queryAttribute, queryLimit } = this.state;
+    const { account, queryLimit, timeRange } = this.props;
+    const { queryAttribute } = this.state;
 
     if (
       account !== prevProps.account ||
       queryAttribute !== prevState.queryAttribute ||
-      queryLimit !== prevState.queryLimit ||
+      queryLimit !== prevProps.queryLimit ||
       timeRange !== prevProps.timeRange
     ) {
       this.fetchChordData();
@@ -142,7 +131,8 @@ export default class Sflow extends React.Component {
   }
 
   createNrqlQuery() {
-    const { queryAttribute, queryLimit } = this.state;
+    const { queryLimit } = this.props;
+    const { queryAttribute } = this.state;
 
     let attr = "sum(scaledByteCount * 8)";
     if (queryAttribute === "count") {
@@ -165,12 +155,6 @@ export default class Sflow extends React.Component {
   handleAttributeChange(attr) {
     if (attr === "count" || attr === "throughput") {
       this.setState({ queryAttribute: attr });
-    }
-  }
-
-  handleLimitChange(limit) {
-    if (limit > 0 && limit <= 100) {
-      this.setState({ queryLimit: limit });
     }
   }
 
@@ -207,17 +191,10 @@ export default class Sflow extends React.Component {
   }
 
   renderSideMenu() {
-    const { queryAttribute, queryLimit } = this.state;
+    const { queryAttribute } = this.state;
+
     return (
       <>
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Account</strong>
-        </BlockText>
-        <AccountDropdown
-          className='account-dropdown'
-          onSelect={this.handleAccountChange}
-          urlState={this.props.nerdletUrlState}
-        />
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Show devices with...</strong>
         </BlockText>
@@ -234,29 +211,6 @@ export default class Sflow extends React.Component {
           <div className='radio-option'>
             <Radio value='count' />
             <label>Most flows collected</label>
-          </div>
-        </RadioGroup>
-        <br />
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Limit results to...</strong>
-        </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='limit'
-          onChange={this.handleLimitChange}
-          selectedValue={queryLimit}
-        >
-          <div className='radio-option'>
-            <Radio value='25' />
-            <label>25 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='50' />
-            <label>50 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='100' />
-            <label>100 devices</label>
           </div>
         </RadioGroup>
       </>

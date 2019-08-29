@@ -22,7 +22,14 @@ import { renderDeviceHeader } from "./common";
 import Ipfix from "./ipfix";
 import Sflow from "./sflow";
 
-import { INTERVAL_SECONDS_DEFAULT, INTERVAL_SECONDS_MAX, INTERVAL_SECONDS_MIN } from "./constants";
+import {
+  NRQL_QUERY_LIMIT_MIN,
+  NRQL_QUERY_LIMIT_MAX,
+  NRQL_QUERY_LIMIT_DEFAULT,
+  INTERVAL_SECONDS_DEFAULT,
+  INTERVAL_SECONDS_MAX,
+  INTERVAL_SECONDS_MIN,
+} from "./constants";
 
 export default class NetworkTelemetryNerdlet extends React.Component {
   static propTypes = {
@@ -38,6 +45,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     this.state = {
       account: {},
       dataSource: "sflow",
+      queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
       enabled: false,
       intervalSeconds: INTERVAL_SECONDS_DEFAULT,
       isLoading: true,
@@ -48,6 +56,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     this.handleAccountChange = this.handleAccountChange.bind(this);
     this.handleDataSourceChange = this.handleDataSourceChange.bind(this);
     this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
+    this.handleLimitChange = this.handleLimitChange.bind(this);
   }
 
   /*
@@ -109,11 +118,17 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }
 
+  handleLimitChange(limit) {
+    if (limit >= NRQL_QUERY_LIMIT_MIN && limit <= NRQL_QUERY_LIMIT_MAX) {
+      this.setState({ queryLimit: limit });
+    }
+  }
+
   /*
    * Global nerdlet menu items
    */
   renderMainMenu() {
-    const { dataSource, enabled, intervalSeconds } = this.state;
+    const { dataSource, enabled, intervalSeconds, queryLimit } = this.state;
 
     return (
       <div className='side-menu'>
@@ -141,6 +156,29 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           <div className='radio-option'>
             <Radio value='ipfix' />
             <label>ipfix</label>
+          </div>
+        </RadioGroup>
+        <br />
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Limit results to...</strong>
+        </BlockText>
+        <RadioGroup
+          className='radio-group'
+          name='limit'
+          onChange={this.handleLimitChange}
+          selectedValue={queryLimit}
+        >
+          <div className='radio-option'>
+            <Radio value={25} />
+            <label>25 devices</label>
+          </div>
+          <div className='radio-option'>
+            <Radio value={50} />
+            <label>50 devices</label>
+          </div>
+          <div className='radio-option'>
+            <Radio value={100} />
+            <label>100 devices</label>
           </div>
         </RadioGroup>
         <br />
@@ -197,7 +235,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    */
   render() {
     const { timeRange } = this.props.launcherUrlState;
-    const { account, dataSource, intervalSeconds, isLoading } = this.state;
+    const { account, dataSource, intervalSeconds, isLoading, queryLimit } = this.state;
 
     return (
       <div className='background'>
@@ -216,9 +254,13 @@ export default class NetworkTelemetryNerdlet extends React.Component {
               {isLoading ? (
                 <Spinner fillContainer />
               ) : dataSource === "sflow" ? (
-                <Sflow account={account} timeRange={timeRange} />
+                <Sflow account={account} queryLimit={queryLimit} timeRange={timeRange} />
               ) : dataSource === "ipfix" ? (
-                <Ipfix account={account} intervalSeconds={intervalSeconds} />
+                <Ipfix
+                  account={account}
+                  intervalSeconds={intervalSeconds}
+                  queryLimit={queryLimit}
+                />
               ) : (
                 <div>Unknown data source</div>
               )}
