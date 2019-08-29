@@ -20,6 +20,8 @@ import { AccountDropdown } from "nr1-commune";
 import { RadioGroup, Radio } from "react-radio-group";
 import { renderDeviceHeader } from "./common";
 import Ipfix from "./ipfix";
+import Sflow from "./sflow";
+
 import { INTERVAL_SECONDS_DEFAULT, INTERVAL_SECONDS_MAX, INTERVAL_SECONDS_MIN } from "./constants";
 
 export default class NetworkTelemetryNerdlet extends React.Component {
@@ -194,6 +196,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    * Main Renderer
    */
   render() {
+    const { timeRange } = this.props.launcherUrlState;
     const { account, dataSource, intervalSeconds, isLoading } = this.state;
 
     return (
@@ -213,9 +216,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
               {isLoading ? (
                 <Spinner fillContainer />
               ) : dataSource === "sflow" ? (
-                <div> TODO... </div>
+                <Sflow account={account} timeRange={timeRange} />
               ) : dataSource === "ipfix" ? (
-                <Ipfix account={account} />
+                <Ipfix account={account} intervalSeconds={intervalSeconds} />
               ) : (
                 <div>Unknown data source</div>
               )}

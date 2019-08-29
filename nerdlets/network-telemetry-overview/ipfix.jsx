@@ -310,6 +310,10 @@ export default class Ipfix extends React.Component {
     const { height, width } = this.props;
     const { activeLink, links, nodes, isLoading } = this.state;
 
+    if (isLoading) {
+      return <Spinner fillContainer />;
+    }
+
     if (nodes.length === 0 || links.length === 0) {
       return <div>No data found</div>;
     }

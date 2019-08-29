@@ -26,19 +26,23 @@ import * as d3 from "d3";
 const COLOR_START = "#11A893";
 const COLOR_END = "#FFC400";
 
-export default class NetworkTelemetryOverview extends React.Component {
+export default class Sflow extends React.Component {
   static propTypes = {
+    account: PropTypes.object.isRequired,
+    timeRange: PropTypes.object.isRequired,
     height: PropTypes.number,
-    launcherUrlState: PropTypes.object,
-    nerdletUrlState: PropTypes.object,
     width: PropTypes.number,
+  };
+
+  static defaultProps = {
+    height: 650,
+    width: 700,
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      account: {},
       detailData: [],
       entities: [],
       isLoading: true,
@@ -48,7 +52,6 @@ export default class NetworkTelemetryOverview extends React.Component {
       selectedEntity: null,
     };
 
-    this.handleAccountChange = this.handleAccountChange.bind(this);
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
     this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
@@ -59,14 +62,14 @@ export default class NetworkTelemetryOverview extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { timeRange } = this.props.launcherUrlState;
-    const { account, queryAttribute, queryLimit } = this.state;
+    const { account, timeRange } = this.props;
+    const { queryAttribute, queryLimit } = this.state;
 
     if (
-      account !== prevState.account ||
+      account !== prevProps.account ||
       queryAttribute !== prevState.queryAttribute ||
       queryLimit !== prevState.queryLimit ||
-      timeRange !== (prevProps.launcherUrlState || {}).timeRange
+      timeRange !== prevProps.timeRange
     ) {
       this.fetchChordData();
     }
@@ -76,11 +79,12 @@ export default class NetworkTelemetryOverview extends React.Component {
    * fetch data
    */
   async fetchChordData() {
-    const { account, queryAttribute } = this.state;
+    const { account } = this.props;
+    const { queryAttribute } = this.state;
 
     if (!account || !account.id) return;
 
-    this.setState({ isLoading: true, detailData: [] });
+    this.setState({ detailData: [] });
 
     const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
 
@@ -156,10 +160,6 @@ export default class NetworkTelemetryOverview extends React.Component {
       " " +
       timeRangeToNrql(this.props.launcherUrlState)
     );
-  }
-
-  handleAccountChange(account) {
-    if (account) this.setState({ account });
   }
 
   handleAttributeChange(attr) {
@@ -271,40 +271,24 @@ export default class NetworkTelemetryOverview extends React.Component {
     const innerRadius = outerRadius - 10;
 
     return (
-      <div className='background'>
-        <Grid className='fullheight'>
-          <GridItem className='side-menu' columnSpan={2}>
-            {this.renderSideMenu()}
-          </GridItem>
-          <GridItem className='chord-container' columnSpan={7}>
-            {isLoading ? (
-              <Spinner fillContainer />
-            ) : (
-              <ChordDiagram
-                componentId={1}
-                groupColors={entityColors}
-                groupLabels={entities}
-                height={height}
-                innerRadius={innerRadius}
-                matrix={relationships}
-                outerRadius={outerRadius}
-                width={width}
-                groupOnClick={this.handleChartGroupClick}
-              />
-            )}
-          </GridItem>
-          <GridItem className='side-info' columnSpan={3}>
-            {renderDeviceHeader(selectedEntity)}
-            <Tabs defaultSelectedItem='flow-tab'>
-              <TabsItem itemKey='flow-tab' label='flow summary'>
-                {this.renderFlowSummaryTable()}
-              </TabsItem>
-              <TabsItem itemKey='other-tab' label='device info'>
-                {this.renderDeviceInfo()}
-              </TabsItem>
-            </Tabs>
-          </GridItem>
-        </Grid>
+      <div>
+        {isLoading ? (
+          <Spinner fillContainer />
+        ) : entities.length < 1 ? (
+          <div>No results found</div>
+        ) : (
+          <ChordDiagram
+            componentId={1}
+            groupColors={entityColors}
+            groupLabels={entities}
+            height={height}
+            innerRadius={innerRadius}
+            matrix={relationships}
+            outerRadius={outerRadius}
+            width={width}
+            groupOnClick={this.handleChartGroupClick}
+          />
+        )}
       </div>
     );
   }
