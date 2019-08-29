@@ -24,7 +24,7 @@ import { Sankey } from "react-vis";
 import { RadioGroup, Radio } from "react-radio-group";
 import { Table } from "semantic-ui-react";
 import { bitsToSize } from "../../src/lib/bytes-to-size";
-import { renderDeviceHeader } from "../common";
+import { renderDeviceHeader } from "./common";
 
 import * as d3 from "d3";
 

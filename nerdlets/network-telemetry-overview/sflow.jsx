@@ -19,7 +19,7 @@ import {
 } from "nr1";
 import { RadioGroup, Radio } from "react-radio-group";
 import { fetchNrqlResults } from "../../src/lib/nrql";
-import { renderDeviceHeader } from "../common";
+import { renderDeviceHeader } from "./common";
 
 import * as d3 from "d3";
 
