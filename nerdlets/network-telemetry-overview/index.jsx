@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 import ChordDiagram from "react-chord-diagram";
-import { AccountDropdown } from "nr1-commune";
+import { AccountDropdown } from "nr1-commune/components/account-dropdown";
 import { Table } from "semantic-ui-react";
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
-import { timeRangeToNrql } from "nr1-commune";
+import { timeRangeToNrql } from "nr1-commune/components/time-range";
 import {
   BlockText,
   Tabs,
