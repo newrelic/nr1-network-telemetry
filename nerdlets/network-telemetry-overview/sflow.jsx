@@ -1,23 +1,23 @@
-import PropTypes from "prop-types";
-import React from "react";
-import ChordDiagram from "react-chord-diagram";
-import { AccountDropdown } from "nr1-commune";
-import { Table } from "semantic-ui-react";
-import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
-import { timeRangeToNrql } from "nr1-commune";
-import { BlockText, Icon, List, ListItem, Grid, GridItem, HeadingText, Spinner } from "nr1";
-import { RadioGroup, Radio } from "react-radio-group";
-import { fetchNrqlResults } from "../../src/lib/nrql";
-
 import * as d3 from "d3";
 
+import { BlockText, Spinner } from "nr1";
 import { COLOR_END, COLOR_START, NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
+import { Radio, RadioGroup } from "react-radio-group";
+import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
+
+import ChordDiagram from "react-chord-diagram";
+import PropTypes from "prop-types";
+import React from "react";
+import { Table } from "semantic-ui-react";
+import { fetchNrqlResults } from "../../src/lib/nrql";
+import { timeRangeToNrql } from "../../src/components/time-range";
 
 export default class Sflow extends React.Component {
   static propTypes = {
     account: PropTypes.object.isRequired,
     configRenderer: PropTypes.func,
     height: PropTypes.number,
+    launcherUrlState: PropTypes.object,
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
     timeRange: PropTypes.object.isRequired,
@@ -25,8 +25,8 @@ export default class Sflow extends React.Component {
   };
 
   static defaultProps = {
-    queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     height: 650,
+    queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
   };
 
@@ -69,7 +69,6 @@ export default class Sflow extends React.Component {
    */
   async fetchChordData() {
     const { account } = this.props;
-    const { queryAttribute } = this.state;
 
     if (!account || !account.id) return;
 
@@ -77,8 +76,8 @@ export default class Sflow extends React.Component {
 
     const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
 
-    let entities = [];
-    let detailData = [];
+    const entities = [];
+    const detailData = [];
 
     const data = results.reduce((acc, d) => {
       const source = d.facet[0];
@@ -92,7 +91,7 @@ export default class Sflow extends React.Component {
 
       if (!Array.isArray(acc[s])) acc[s] = [];
 
-      const value = d["value"] || 0;
+      const value = d.value || 0;
       acc[s][t] = value;
       detailData.push({ source, target, value });
 
@@ -102,8 +101,8 @@ export default class Sflow extends React.Component {
     const entityCount = entities.length;
     const colorFunc = this.colorForEntity(entityCount);
 
-    let entityColors = [];
-    let relationships = [];
+    const entityColors = [];
+    const relationships = [];
     for (let y = 0; y < entityCount; y++) {
       entityColors.push(colorFunc(y));
       relationships[y] = [];
@@ -206,11 +205,11 @@ export default class Sflow extends React.Component {
         >
           <div className='radio-option'>
             <Radio value='throughput' />
-            <label>Highest Throughput</label>
+            <label htmlFor={"throughput"}>Highest Throughput</label>
           </div>
           <div className='radio-option'>
             <Radio value='count' />
-            <label>Most flows collected</label>
+            <label htmlFor={"count"}>Most flows collected</label>
           </div>
         </RadioGroup>
       </>
@@ -218,7 +217,7 @@ export default class Sflow extends React.Component {
   }
 
   render() {
-    const { entities, entityColors, isLoading, relationships, selectedEntity } = this.state;
+    const { entities, entityColors, isLoading, relationships } = this.state;
     const width = 600;
     const height = 700;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
@@ -235,12 +234,12 @@ export default class Sflow extends React.Component {
             componentId={1}
             groupColors={entityColors}
             groupLabels={entities}
+            groupOnClick={this.handleChartGroupClick}
             height={height}
             innerRadius={innerRadius}
             matrix={relationships}
             outerRadius={outerRadius}
             width={width}
-            groupOnClick={this.handleChartGroupClick}
           />
         )}
       </div>

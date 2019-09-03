@@ -1,34 +1,21 @@
-import React from "react";
-import PropTypes from "prop-types";
 import {
-  Button,
-  BlockText,
-  ChartGroup,
-  LineChart,
-  Grid,
-  GridItem,
-  Modal,
-  Spinner,
-  Stack,
-  StackItem,
-  HeadingText,
-} from "nr1";
-import { fetchNrqlResults } from "../../src/lib/nrql";
-import { Sankey } from "react-vis";
-import { RadioGroup, Radio } from "react-radio-group";
-import { Table } from "semantic-ui-react";
-import { bitsToSize } from "../../src/lib/bytes-to-size";
-import { renderDeviceHeader } from "./common";
-
-import * as d3 from "d3";
-
-import {
-  NRQL_QUERY_LIMIT_DEFAULT,
   BLURRED_LINK_OPACITY,
   COLORS,
   FOCUSED_LINK_OPACITY,
   NRQL_IPFIX_WHERE,
+  NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
+
+import { BlockText, ChartGroup, HeadingText, LineChart, Modal, Spinner } from "nr1";
+import { Radio, RadioGroup } from "react-radio-group";
+
+import PropTypes from "prop-types";
+import React from "react";
+import { Sankey } from "react-vis";
+import { Table } from "semantic-ui-react";
+import { bitsToSize } from "../../src/lib/bytes-to-size";
+import { fetchNrqlResults } from "../../src/lib/nrql";
+import { renderDeviceHeader } from "./common";
 
 export default class Ipfix extends React.Component {
   static propTypes = {
@@ -40,9 +27,9 @@ export default class Ipfix extends React.Component {
   };
 
   static defaultProps = {
+    height: 650,
     intervalSeconds: 30,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
-    height: 650,
     width: 700,
   };
 
@@ -137,8 +124,8 @@ export default class Ipfix extends React.Component {
       return;
     }
 
-    let links = [];
-    let nodes = [];
+    const links = [];
+    const nodes = [];
 
     results.forEach(row => {
       // Collect nodes
@@ -168,11 +155,11 @@ export default class Ipfix extends React.Component {
         links[sa].value += value;
       } else {
         links.push({
+          color: nodeSummary[sourceId].color,
           source: ids[0],
+          sourceId,
           target: ids[1],
           value,
-          color: nodeSummary[sourceId].color,
-          sourceId,
         });
       }
 
@@ -182,11 +169,11 @@ export default class Ipfix extends React.Component {
         links[ad].value += value;
       } else {
         links.push({
+          color: nodeSummary[sourceId].color,
           source: ids[1],
+          sourceId,
           target: ids[2],
           value,
-          color: nodeSummary[sourceId].color,
-          sourceId,
         });
       }
     });
@@ -242,18 +229,18 @@ export default class Ipfix extends React.Component {
             <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
             <LineChart
               accountId={account.id || null}
-              style={{ height: 200 }}
               query={throughputQuery}
+              style={{ height: 200 }}
             />
 
             <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
-            <LineChart accountId={account.id || null} style={{ height: 200 }} query={destQuery} />
+            <LineChart accountId={account.id || null} query={destQuery} style={{ height: 200 }} />
 
             <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
             <LineChart
               accountId={account.id || null}
-              style={{ height: 200 }}
               query={protocolQuery}
+              style={{ height: 200 }}
             />
           </ChartGroup>
         </div>
@@ -277,11 +264,11 @@ export default class Ipfix extends React.Component {
         >
           <div className='radio-option'>
             <Radio value='peerName' />
-            <label>Peer Name</label>
+            <label htmlFor={"peerName"}>Peer Name</label>
           </div>
           <div className='radio-option'>
             <Radio value='bgpSourceAsNumber' />
-            <label>AS Number</label>
+            <label htmlFor={"bgpSourceAsNumber"}>AS Number</label>
           </div>
         </RadioGroup>
         <br />

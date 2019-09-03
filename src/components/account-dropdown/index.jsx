@@ -1,30 +1,31 @@
-import React from "react";
-import PropTypes from "prop-types";
 import {
-  nerdlet,
-  UserStorageQuery,
-  UserStorageMutation,
   AccountsQuery,
   Dropdown,
   DropdownItem,
   Spinner,
+  UserStorageMutation,
+  UserStorageQuery,
+  nerdlet,
 } from "nr1";
+import PropTypes from "prop-types";
+import React from "react";
 
 const collection = "newrelic";
 const documentId = "default-account";
 
 export class AccountDropdown extends React.Component {
   static propTypes = {
-    onSelect: PropTypes.func,
-    urlState: PropTypes.object,
     className: PropTypes.any,
+    onSelect: PropTypes.func,
     style: PropTypes.any,
     title: PropTypes.string,
+    urlState: PropTypes.object,
   };
 
   static defaultProps = {
     title: "Select account...",
   };
+
   constructor(props) {
     super(props);
 
@@ -46,8 +47,8 @@ export class AccountDropdown extends React.Component {
         );
         if (account) {
           return {
-            selectedFromUrlState: true,
             selected: account,
+            selectedFromUrlState: true,
           };
         }
       }
@@ -112,8 +113,8 @@ export class AccountDropdown extends React.Component {
     await UserStorageMutation.mutate({
       actionType: UserStorageMutation.ACTION_TYPE.WRITE_DOCUMENT,
       collection,
-      documentId,
       document: { id: account.id },
+      documentId,
     });
 
     this.setState({
@@ -125,8 +126,8 @@ export class AccountDropdown extends React.Component {
     this.setState(state => {
       if (!state.selected || state.selected.id !== account.id) {
         return {
-          selectedFromUrlState: false,
           selected: account,
+          selectedFromUrlState: false,
         };
       }
 
@@ -149,7 +150,7 @@ export class AccountDropdown extends React.Component {
     ));
 
     return (
-      <Dropdown title={(selected || {}).name || title} className={className} style={style}>
+      <Dropdown className={className} style={style} title={(selected || {}).name || title}>
         {items}
       </Dropdown>
     );

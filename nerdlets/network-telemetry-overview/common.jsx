@@ -1,5 +1,5 @@
-import React from "react";
 import { BlockText, Icon } from "nr1";
+import React from "react";
 
 export const renderDeviceHeader = (deviceName, deviceType) => {
   return (

@@ -1,42 +1,26 @@
-import React from "react";
-import ChordDiagram from "react-chord-diagram";
-import { AccountDropdown } from "../../src/components/account-dropdown";
-import { Table } from "semantic-ui-react";
-import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
-import { timeRangeToNrql } from "../../src/components/time-range";
-import PropTypes from "prop-types";
+import { BlockText, Button, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import {
-  Button,
-  BlockText,
-  Grid,
-  GridItem,
-  Modal,
-  Spinner,
-  Stack,
-  StackItem,
-  HeadingText,
-} from "nr1";
-import { AccountDropdown } from "nr1-commune";
-import { RadioGroup, Radio } from "react-radio-group";
-import { renderDeviceHeader } from "./common";
-import Ipfix from "./ipfix";
-import Sflow from "./sflow";
-
-import {
-  NRQL_QUERY_LIMIT_MIN,
-  NRQL_QUERY_LIMIT_MAX,
-  NRQL_QUERY_LIMIT_DEFAULT,
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
   INTERVAL_SECONDS_MIN,
+  NRQL_QUERY_LIMIT_DEFAULT,
+  NRQL_QUERY_LIMIT_MAX,
+  NRQL_QUERY_LIMIT_MIN,
 } from "./constants";
+import { Radio, RadioGroup } from "react-radio-group";
+
+import { AccountDropdown } from "../../src/components/account-dropdown";
+import Ipfix from "./ipfix";
+import PropTypes from "prop-types";
+import React from "react";
+import Sflow from "./sflow";
 
 export default class NetworkTelemetryNerdlet extends React.Component {
   static propTypes = {
-    nerdletUrlState: PropTypes.object,
-    launcherUrlState: PropTypes.object,
-    width: PropTypes.number,
     height: PropTypes.number,
+    launcherUrlState: PropTypes.object,
+    nerdletUrlState: PropTypes.object,
+    width: PropTypes.number,
   };
 
   constructor(props) {
@@ -45,12 +29,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     this.state = {
       account: {},
       dataSource: "sflow",
-      queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
+      detailPaused: false,
       enabled: false,
+      hideDetail: true,
       intervalSeconds: INTERVAL_SECONDS_DEFAULT,
       isLoading: true,
-      hideDetail: true,
-      detailPaused: false,
+      queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
@@ -109,7 +93,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   }
 
   handleIntervalSecondsChange(evt) {
-    const intervalSeconds = (evt.target || {}).value || DEFAULT_INTERVAL_SECONDS;
+    const intervalSeconds = (evt.target || {}).value || INTERVAL_SECONDS_DEFAULT;
 
     if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
       this.stopTimer();
@@ -151,11 +135,11 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         >
           <div className='radio-option'>
             <Radio value='sflow' />
-            <label>sflow</label>
+            <label htmlFor={"sflow"}>sflow</label>
           </div>
           <div className='radio-option'>
             <Radio value='ipfix' />
-            <label>ipfix</label>
+            <label htmlFor={"ipfix"}>ipfix</label>
           </div>
         </RadioGroup>
         <br />
@@ -170,15 +154,15 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         >
           <div className='radio-option'>
             <Radio value={25} />
-            <label>25 devices</label>
+            <label htmlFor={"25"}>25 devices</label>
           </div>
           <div className='radio-option'>
             <Radio value={50} />
-            <label>50 devices</label>
+            <label htmlFor={"50"}>50 devices</label>
           </div>
           <div className='radio-option'>
             <Radio value={100} />
-            <label>100 devices</label>
+            <label htmlFor={"100"}>100 devices</label>
           </div>
         </RadioGroup>
         <br />
@@ -189,26 +173,26 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <span>
           {INTERVAL_SECONDS_MIN}s
           <input
-            type='range'
-            min={INTERVAL_SECONDS_MIN}
-            max={INTERVAL_SECONDS_MAX}
-            value={intervalSeconds}
-            onChange={this.handleIntervalSecondsChange}
             className='slider'
             id='intervalSeconds'
+            max={INTERVAL_SECONDS_MAX}
+            min={INTERVAL_SECONDS_MIN}
+            onChange={this.handleIntervalSecondsChange}
             step='1'
+            type='range'
+            value={intervalSeconds}
           />
           {INTERVAL_SECONDS_MAX}s
         </span>
         &nbsp;
         <Button
-          onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
-          sizeType={Button.SIZE_TYPE.SLIM}
           iconType={
             this.state.enabled
               ? Button.ICON_TYPE.INTERFACE__STATE__PRIVATE
               : Button.ICON_TYPE.INTERFACE__CARET__CARET_RIGHT__V_ALTERNATE
           }
+          onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
+          sizeType={Button.SIZE_TYPE.SLIM}
         />
       </div>
     );
@@ -227,7 +211,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   renderSummaryInfo() {
     const { nodeSummary } = this.state;
 
-    return <div className='side-info'>TODO: Summary Info</div>;
+    return <div className='side-info'>{nodeSummary || "TODO: Summary Info"}</div>;
   }
 
   /*
@@ -242,8 +226,8 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={2}>
             <Stack
-              directionType={Stack.DIRECTION_TYPE.VERTICAL}
               alignmentType={Stack.ALIGNMENT_TYPE.FILL}
+              directionType={Stack.DIRECTION_TYPE.VERTICAL}
             >
               <StackItem>{this.renderMainMenu()}</StackItem>
               <StackItem>{this.renderSubMenu()}</StackItem>
