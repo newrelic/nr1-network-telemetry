@@ -11,7 +11,7 @@ import {
   Spinner,
   HeadingText,
 } from "nr1";
-import { AccountDropdown } from "nr1-commune/components/account-dropdown";
+import { AccountDropdown } from "../../src/components/account-dropdown";
 import { fetchNrqlResults } from "../../src/lib/nrql";
 import { Sankey } from "react-vis";
 import { RadioGroup, Radio } from "react-radio-group";
