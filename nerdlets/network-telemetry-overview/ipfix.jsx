@@ -2,6 +2,7 @@ import {
   BLURRED_LINK_OPACITY,
   COLORS,
   FOCUSED_LINK_OPACITY,
+  INTERVAL_SECONDS_DEFAULT,
   NRQL_IPFIX_WHERE,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
@@ -28,7 +29,7 @@ export default class Ipfix extends React.Component {
 
   static defaultProps = {
     height: 650,
-    intervalSeconds: 30,
+    intervalSeconds: INTERVAL_SECONDS_DEFAULT,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
   };
@@ -54,7 +55,7 @@ export default class Ipfix extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchIpfixData();
+      this.fetchIpfixData();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -67,8 +68,41 @@ export default class Ipfix extends React.Component {
       queryLimit !== prevProps.queryLimit ||
       peerBy !== prevState.peerBy
     ) {
-      this.fetchIpfixData();
+      console.log(this.props);
+      //this.resetTimer(this.fetchIpfixData);
     }
+  }
+
+  componentWillUnmount() {
+    this.stopTimer();
+  }
+
+  /*
+   * Timer
+   */
+  startTimer(runThis) {
+    if (runThis) {
+      const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
+
+      if (intervalSeconds > 0) {
+        // Fire right away, then schedule
+        runThis();
+        this.refresh = setInterval(async () => {
+          runThis();
+        }, intervalSeconds * 1000);
+      }
+    }
+  }
+
+  stopTimer() {
+    if (this.refresh) clearInterval(this.refresh);
+  }
+
+  async resetTimer() {
+    await this.setState({ isLoading: true });
+    this.stopTimer();
+    this.resetTimer(this.fetchIpfixData);
+    this.setState({ isLoading: false });
   }
 
   /*
@@ -109,8 +143,12 @@ export default class Ipfix extends React.Component {
   }
 
   async fetchIpfixData() {
-    const { account } = this.props;
+    if (!this.props) return;
+
+    const account = this.props.account;
     const { reset } = this.state;
+
+    console.log(account);
 
     if (!account || !account.id) return;
 

@@ -1,4 +1,4 @@
-import { BlockText, Button, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
+import { BlockText, Button, Grid, GridItem, Spinner, nerdlet } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
@@ -15,6 +15,12 @@ import Ipfix from "./ipfix";
 import PropTypes from "prop-types";
 import React from "react";
 import Sflow from "./sflow";
+import debounce from 'lodash/debounce';
+
+const DATA_SOURCES = [
+  { name: 'ipfix', component: Ipfix, eventType: 'ipfix', },
+  { name: 'sflow', component: Sflow, eventType: 'sflow', },
+];
 
 export default class NetworkTelemetryNerdlet extends React.Component {
   static propTypes = {
@@ -27,15 +33,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   constructor(props) {
     super(props);
 
+    const intervalSeconds = this.props.nerdletUrlState.intervalSeconds || INTERVAL_SECONDS_DEFAULT;
+
     this.state = {
       account: {},
-      dataSource: "sflow",
-      detailPaused: false,
-      enabled: false,
-      hideDetail: true,
-      intervalSeconds: INTERVAL_SECONDS_DEFAULT,
+      intervalSlider: intervalSeconds, // Track slider local, value in URL
       isLoading: true,
-      queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
@@ -45,67 +48,32 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   }
 
   /*
-   * Timer
-   */
-  startTimer(runThis) {
-    if (runThis) {
-      const { intervalSeconds } = this.state;
-
-      // Fire right away, then schedule
-      runThis();
-      this.refresh = setInterval(async () => {
-        runThis();
-      }, intervalSeconds * 1000);
-    }
-  }
-
-  stopTimer() {
-    if (this.refresh) clearInterval(this.refresh);
-  }
-
-  async resetTimer() {
-    await this.setState({ enabled: false, isLoading: true });
-    this.stopTimer();
-    this.setState({ enabled: true });
-    this.startTimer();
-    this.setState({ isLoading: false });
-  }
-
-  /*
    * Helper functions
    */
   handleDataSourceChange(dataSource) {
-    if (dataSource) {
-      this.setState({ dataSource });
+    if (dataSource >= 0) {
+      nerdlet.setUrlState({ dataSource });
     }
   }
 
   async handleAccountChange(account) {
-    const { enabled } = this.state;
-
     if (account) {
-      await this.setState({ account, isLoading: false });
-      if (enabled) {
-        this.resetTimer();
-      } else {
-        this.startTimer();
-      }
+      this.setState({ account, isLoading: false });
     }
   }
 
-  handleIntervalSecondsChange(value) {
+  // Debounce slider changes so we're not hammering queries
+  handleIntervalSecondsChange = debounce((value) => {
     const intervalSeconds = value || INTERVAL_SECONDS_DEFAULT;
 
     if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
-      this.stopTimer();
-      this.setState({ intervalSeconds });
-      this.startTimer();
+      nerdlet.setUrlState({ intervalSeconds });
     }
-  }
+  }, 500)
 
-  handleLimitChange(limit) {
-    if (limit >= NRQL_QUERY_LIMIT_MIN && limit <= NRQL_QUERY_LIMIT_MAX) {
-      this.setState({ queryLimit: limit });
+  handleLimitChange(queryLimit) {
+    if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
+      nerdlet.setUrlState({ queryLimit });
     }
   }
 
@@ -113,7 +81,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    * Global nerdlet menu items
    */
   renderMainMenu() {
-    const { dataSource, enabled, intervalSeconds, queryLimit } = this.state;
+    const dataSource = this.props.nerdletUrlState.dataSource || 0;
+    const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
+    const { intervalSlider } = this.state;
 
     return (
       <div className='side-menu'>
@@ -134,14 +104,14 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           onChange={this.handleDataSourceChange}
           selectedValue={dataSource}
         >
-          <div className='radio-option'>
-            <Radio value='sflow' />
-            <label htmlFor={"sflow"}>sflow</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='ipfix' />
-            <label htmlFor={"ipfix"}>ipfix</label>
-          </div>
+          {
+            DATA_SOURCES.map((v, i) => (
+              <div key={i} className='radio-option'>
+                <Radio value={i} />
+                <label htmlFor={i}>{v.name}</label>
+              </div>
+            ))
+          }
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
@@ -168,16 +138,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Refresh:</strong>&nbsp;
-          <Button
-            iconType={
-              enabled
-                ? Button.ICON_TYPE.INTERFACE__STATE__PRIVATE
-                : Button.ICON_TYPE.INTERFACE__CARET__CARET_RIGHT__V_ALTERNATE
-            }
-            onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
-            sizeType={Button.SIZE_TYPE.SLIM}
-          />
+          <strong>Refresh rate:</strong>
         </BlockText>
         <br />
         <div className='interval-range'>
@@ -185,21 +146,14 @@ export default class NetworkTelemetryNerdlet extends React.Component {
             formatLabel={value => `${value}s`}
             maxValue={INTERVAL_SECONDS_MAX}
             minValue={INTERVAL_SECONDS_MIN}
-            onChange={intervalSeconds => this.setState({ intervalSeconds })}
+            onChange={intervalSlider => this.setState({ intervalSlider })}
             onChangeComplete={this.handleIntervalSecondsChange}
             step={1}
-            value={intervalSeconds}
+            value={intervalSlider}
           />
         </div>
       </div>
     );
-  }
-
-  /*
-   * Per data type menu
-   */
-  renderSubMenu() {
-    return <div className='side-menu'>TODO: Sub Menu</div>;
   }
 
   /*
@@ -216,38 +170,30 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    */
   render() {
     const { timeRange } = this.props.launcherUrlState;
-    const { account, dataSource, intervalSeconds, isLoading, queryLimit } = this.state;
+    const dataSource = this.props.nerdletUrlState.dataSource || 0;
+    const { intervalSeconds, queryLimit } = this.props.nerdletUrlState;
+    const { account, isLoading } = this.state;
+
+    const DsComponent = (DATA_SOURCES[dataSource] || {}).component; // TODO: || Instructions
 
     return (
       <div className='background'>
         <Grid className='fullheight'>
           <GridItem columnSpan={2}>
-            <Stack
-              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
-              directionType={Stack.DIRECTION_TYPE.VERTICAL}
-            >
-              <StackItem>{this.renderMainMenu()}</StackItem>
-              <StackItem>{this.renderSubMenu()}</StackItem>
-            </Stack>
+            {this.renderMainMenu()}
           </GridItem>
-          <GridItem columnSpan={7}>
+          <GridItem columnSpan={10}>
             <div className='main-container'>
-              {isLoading ? (
-                <Spinner fillContainer />
-              ) : dataSource === "sflow" ? (
-                <Sflow account={account} queryLimit={queryLimit} timeRange={timeRange} />
-              ) : dataSource === "ipfix" ? (
-                <Ipfix
+              {isLoading ? <Spinner fillContainer /> :
+                <DsComponent
                   account={account}
-                  intervalSeconds={intervalSeconds}
-                  queryLimit={queryLimit}
+                  intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
+                  queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
+                  timeRange={timeRange}
                 />
-              ) : (
-                <div>Unknown data source</div>
-              )}
+              }
             </div>
           </GridItem>
-          <GridItem columnSpan={3}>{this.renderSummaryInfo()}</GridItem>
         </Grid>
       </div>
     );
