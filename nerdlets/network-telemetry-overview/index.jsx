@@ -10,6 +10,7 @@ import {
 import { Radio, RadioGroup } from "react-radio-group";
 
 import { AccountDropdown } from "../../src/components/account-dropdown";
+import InputRange from "react-input-range";
 import Ipfix from "./ipfix";
 import PropTypes from "prop-types";
 import React from "react";
@@ -92,8 +93,8 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }
 
-  handleIntervalSecondsChange(evt) {
-    const intervalSeconds = (evt.target || {}).value || INTERVAL_SECONDS_DEFAULT;
+  handleIntervalSecondsChange(value) {
+    const intervalSeconds = value || INTERVAL_SECONDS_DEFAULT;
 
     if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
       this.stopTimer();
@@ -167,33 +168,29 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Refresh rate:</strong> {enabled ? intervalSeconds : "Paused"}
+          <strong>Refresh:</strong>&nbsp;
+          <Button
+            iconType={
+              enabled
+                ? Button.ICON_TYPE.INTERFACE__STATE__PRIVATE
+                : Button.ICON_TYPE.INTERFACE__CARET__CARET_RIGHT__V_ALTERNATE
+            }
+            onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
+            sizeType={Button.SIZE_TYPE.SLIM}
+          />
         </BlockText>
         <br />
-        <span>
-          {INTERVAL_SECONDS_MIN}s
-          <input
-            className='slider'
-            id='intervalSeconds'
-            max={INTERVAL_SECONDS_MAX}
-            min={INTERVAL_SECONDS_MIN}
-            onChange={this.handleIntervalSecondsChange}
-            step='1'
-            type='range'
+        <div className='interval-range'>
+          <InputRange
+            formatLabel={value => `${value}s`}
+            maxValue={INTERVAL_SECONDS_MAX}
+            minValue={INTERVAL_SECONDS_MIN}
+            onChange={intervalSeconds => this.setState({ intervalSeconds })}
+            onChangeComplete={this.handleIntervalSecondsChange}
+            step={1}
             value={intervalSeconds}
           />
-          {INTERVAL_SECONDS_MAX}s
-        </span>
-        &nbsp;
-        <Button
-          iconType={
-            this.state.enabled
-              ? Button.ICON_TYPE.INTERFACE__STATE__PRIVATE
-              : Button.ICON_TYPE.INTERFACE__CARET__CARET_RIGHT__V_ALTERNATE
-          }
-          onClick={() => this.setState(prevState => ({ enabled: !prevState.enabled }))}
-          sizeType={Button.SIZE_TYPE.SLIM}
-        />
+        </div>
       </div>
     );
   }

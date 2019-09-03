@@ -1,4 +1,9 @@
 @import url("//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css");
+@import "~react-input-range/lib/css/index.css";
+
+.interval-range {
+  margin: 5px 5px 2em;
+}
 
 .main-container {
   -webkit-box-align: top;
@@ -34,6 +39,7 @@
   background-color: #ffffff;
   height: 100%;
   padding: 5px;
+  min-width: 190px;
 }
 
 .side-info {
