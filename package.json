@@ -10,7 +10,7 @@
         "lint": "npm-run-all --parallel format lint:*",
         "lint:css": "stylelint 'nerdlets/**/*.scss' --syntax scss",
         "lint:css:fix": "npm run lint:css -- --fix",
-        "lint:js": "eslint --ignore-path .eslintignore .",
+        "lint:js": "eslint --ext js,jsx --ignore-path .eslintignore .",
         "lint:js:fix": "npm run lint:js -- --fix",
         "lint:ts": "tsc",
         "start": "nr1 nerdpack:serve",
@@ -32,10 +32,12 @@
     },
     "dependencies": {
         "d3": "^5.11.0",
+        "lodash": "^4.17.15",
         "prop-types": "^15.6.2",
         "react": "^16.6.3",
         "react-chord-diagram": "^1.3.0",
         "react-dom": "^16.6.3",
+        "react-input-range": "^1.3.0",
         "react-radio-group": "^3.0.3",
         "react-vis": "^1.11.7",
         "semantic-ui-react": "^0.88.0"

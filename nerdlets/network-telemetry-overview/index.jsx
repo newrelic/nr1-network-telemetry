@@ -1,32 +1,28 @@
+import { BlockText, Grid, GridItem, Spinner, nerdlet } from "nr1";
+import {
+  INTERVAL_SECONDS_DEFAULT,
+  // INTERVAL_SECONDS_MAX,
+  INTERVAL_SECONDS_MIN,
+  NRQL_QUERY_LIMIT_DEFAULT,
+  NRQL_QUERY_LIMIT_MAX,
+  NRQL_QUERY_LIMIT_MIN,
+} from "./constants";
+import { Radio, RadioGroup } from "react-radio-group";
+
+import { AccountDropdown } from "../../src/components/account-dropdown";
+// import InputRange from "react-input-range";
+import Ipfix from "./ipfix";
 import PropTypes from "prop-types";
 import React from "react";
-import ChordDiagram from "react-chord-diagram";
-import { AccountDropdown } from "../../src/components/account-dropdown";
-import { Table } from "semantic-ui-react";
-import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
-import { timeRangeToNrql } from "../../src/components/time-range";
-import {
-  BlockText,
-  Tabs,
-  TabsItem,
-  Icon,
-  List,
-  ListItem,
-  Grid,
-  GridItem,
-  HeadingText,
-  Spinner,
-} from "nr1";
-import { RadioGroup, Radio } from "react-radio-group";
-import { fetchNrqlResults } from "../../src/lib/nrql";
-import { renderDeviceHeader } from "../common";
+import Sflow from "./sflow";
+import debounce from "lodash/debounce";
 
-import * as d3 from "d3";
+const DATA_SOURCES = [
+  { component: Ipfix, eventType: "ipfix", name: "ipfix" },
+  { component: Sflow, eventType: "sflow", name: "sflow" },
+];
 
-const COLOR_START = "#11A893";
-const COLOR_END = "#FFC400";
-
-export default class NetworkTelemetryOverview extends React.Component {
+export default class NetworkTelemetryNerdlet extends React.Component {
   static propTypes = {
     height: PropTypes.number,
     launcherUrlState: PropTypes.object,
@@ -37,179 +33,60 @@ export default class NetworkTelemetryOverview extends React.Component {
   constructor(props) {
     super(props);
 
+    const intervalSeconds = this.props.nerdletUrlState.intervalSeconds || INTERVAL_SECONDS_DEFAULT;
+
     this.state = {
       account: {},
-      detailData: [],
-      entities: [],
+      intervalSlider: intervalSeconds, // Track slider local, value in URL
       isLoading: true,
-      queryAttribute: "throughput",
-      queryLimit: "50",
-      relationships: [],
-      selectedEntity: null,
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
-    this.handleAttributeChange = this.handleAttributeChange.bind(this);
-    this.handleChartGroupClick = this.handleChartGroupClick.bind(this);
+    this.handleDataSourceChange = this.handleDataSourceChange.bind(this);
+    this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
   }
 
-  componentDidMount() {
-    this.fetchChordData();
+  /*
+   * Helper functions
+   */
+  handleDataSourceChange(dataSource) {
+    if (dataSource >= 0) {
+      nerdlet.setUrlState({ dataSource });
+    }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { timeRange } = this.props.launcherUrlState;
-    const { account, queryAttribute, queryLimit } = this.state;
+  async handleAccountChange(account) {
+    if (account) {
+      this.setState({ account, isLoading: false });
+    }
+  }
 
-    if (
-      account !== prevState.account ||
-      queryAttribute !== prevState.queryAttribute ||
-      queryLimit !== prevState.queryLimit ||
-      timeRange !== (prevProps.launcherUrlState || {}).timeRange
-    ) {
-      this.fetchChordData();
+  // Debounce slider changes so we're not hammering queries
+  handleIntervalSecondsChange = debounce(value => {
+    const intervalSeconds = value || INTERVAL_SECONDS_DEFAULT;
+
+    if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
+      nerdlet.setUrlState({ intervalSeconds });
+    }
+  }, 500);
+
+  handleLimitChange(queryLimit) {
+    if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
+      nerdlet.setUrlState({ queryLimit });
     }
   }
 
   /*
-   * fetch data
+   * Global nerdlet menu items
    */
-  async fetchChordData() {
-    const { account, queryAttribute } = this.state;
-
-    if (!account || !account.id) return;
-
-    this.setState({ isLoading: true, detailData: [] });
-
-    const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
-
-    let entities = [];
-    let detailData = [];
-
-    const data = results.reduce((acc, d) => {
-      const source = d.facet[0];
-      const target = d.facet[1];
-
-      if (entities.indexOf(source) === -1) entities.push(source);
-      const s = entities.indexOf(source);
-
-      if (entities.indexOf(target) === -1) entities.push(target);
-      const t = entities.indexOf(target);
-
-      if (!Array.isArray(acc[s])) acc[s] = [];
-
-      const value = d["value"] || 0;
-      acc[s][t] = value;
-      detailData.push({ source, target, value });
-
-      return acc;
-    }, []);
-
-    const entityCount = entities.length;
-    const colorFunc = this.colorForEntity(entityCount);
-
-    let entityColors = [];
-    let relationships = [];
-    for (let y = 0; y < entityCount; y++) {
-      entityColors.push(colorFunc(y));
-      relationships[y] = [];
-      for (let x = 0; x < entityCount; x++) {
-        relationships[y][x] = (data[y] || [])[x] || 0;
-      }
-    }
-
-    this.setState({
-      detailData,
-      entities,
-      entityColors,
-      isLoading: false,
-      relationships,
-    });
-  }
-
-  // Returns a FUNCTION that generates a color...
-  colorForEntity(entityCount) {
-    return d3.scale
-      .linear()
-      .domain([1, entityCount])
-      .interpolate(d3.interpolateHsl)
-      .range([d3.rgb(COLOR_START), d3.rgb(COLOR_END)]);
-  }
-
-  createNrqlQuery() {
-    const { queryAttribute, queryLimit } = this.state;
-
-    let attr = "sum(scaledByteCount * 8)";
-    if (queryAttribute === "count") {
-      attr = "count(*)";
-    }
+  renderMainMenu() {
+    const dataSource = this.props.nerdletUrlState.dataSource || 0;
+    const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
+    // const { intervalSlider } = this.state;
 
     return (
-      "FROM sflow" +
-      " SELECT " +
-      attr +
-      " as 'value'" +
-      " FACET networkSourceAddress, networkDestinationAddress" +
-      " LIMIT " +
-      queryLimit +
-      " " +
-      timeRangeToNrql(this.props.launcherUrlState)
-    );
-  }
-
-  handleAccountChange(account) {
-    if (account) this.setState({ account });
-  }
-
-  handleAttributeChange(attr) {
-    if (attr === "count" || attr === "throughput") {
-      this.setState({ queryAttribute: attr });
-    }
-  }
-
-  handleLimitChange(limit) {
-    if (limit > 0 && limit <= 100) {
-      this.setState({ queryLimit: limit });
-    }
-  }
-
-  handleChartGroupClick(id) {
-    const { entities, relationships, selectedEntity } = this.state;
-
-    const newEntity = entities[id];
-
-    // Unselect on repeated click
-    if (newEntity === selectedEntity) {
-      // all rows, all columns
-      const detailData = relationships.flatMap(row =>
-        row.reduce((acc, r, k) => {
-          if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-          return acc;
-        }, [])
-      );
-      this.setState({ detailData, selectedEntity: "" });
-    } else {
-      // id row, all columns
-      const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
-        if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-        return acc;
-      }, []);
-
-      // all rows, id column
-      const targetIds = relationships.reduce((acc, r, k) => {
-        if (r[id] !== 0) acc.push({ source: newEntity, target: entities[k], value: r[id] });
-        return acc;
-      }, []);
-
-      this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity: newEntity });
-    }
-  }
-
-  renderSideMenu() {
-    const { queryAttribute, queryLimit } = this.state;
-    return (
-      <>
+      <div className='side-menu'>
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Account</strong>
         </BlockText>
@@ -219,26 +96,24 @@ export default class NetworkTelemetryOverview extends React.Component {
           urlState={this.props.nerdletUrlState}
         />
         <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Show devices with...</strong>
+          <strong>Source</strong>
         </BlockText>
         <RadioGroup
           className='radio-group'
-          name='attribute'
-          onChange={this.handleAttributeChange}
-          selectedValue={queryAttribute}
+          name='dataSource'
+          onChange={this.handleDataSourceChange}
+          selectedValue={dataSource}
         >
-          <div className='radio-option'>
-            <Radio value='throughput' />
-            <label>Highest Throughput</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value='count' />
-            <label>Most flows collected</label>
-          </div>
+          {DATA_SOURCES.map((v, i) => (
+            <div className='radio-option' key={i}>
+              <Radio value={i} />
+              <label htmlFor={i}>{v.name}</label>
+            </div>
+          ))}
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Limit results to...</strong>
+          <strong>Limit results to about...</strong>
         </BlockText>
         <RadioGroup
           className='radio-group'
@@ -247,98 +122,71 @@ export default class NetworkTelemetryOverview extends React.Component {
           selectedValue={queryLimit}
         >
           <div className='radio-option'>
-            <Radio value='25' />
-            <label>25 devices</label>
+            <Radio value={25} />
+            <label htmlFor={"25"}>25 devices</label>
           </div>
           <div className='radio-option'>
-            <Radio value='50' />
-            <label>50 devices</label>
+            <Radio value={50} />
+            <label htmlFor={"50"}>50 devices</label>
           </div>
           <div className='radio-option'>
-            <Radio value='100' />
-            <label>100 devices</label>
+            <Radio value={100} />
+            <label htmlFor={"100"}>100 devices</label>
           </div>
         </RadioGroup>
-      </>
-    );
-  }
-
-  render() {
-    const { entities, entityColors, isLoading, relationships, selectedEntity } = this.state;
-    const width = 600;
-    const height = 700;
-    const outerRadius = Math.min(height, width) * 0.5 - 100;
-    const innerRadius = outerRadius - 10;
-
-    return (
-      <div className='background'>
-        <Grid className='fullheight'>
-          <GridItem className='side-menu' columnSpan={2}>
-            {this.renderSideMenu()}
-          </GridItem>
-          <GridItem className='chord-container' columnSpan={7}>
-            {isLoading ? (
-              <Spinner fillContainer />
-            ) : (
-              <ChordDiagram
-                componentId={1}
-                groupColors={entityColors}
-                groupLabels={entities}
-                height={height}
-                innerRadius={innerRadius}
-                matrix={relationships}
-                outerRadius={outerRadius}
-                width={width}
-                groupOnClick={this.handleChartGroupClick}
-              />
-            )}
-          </GridItem>
-          <GridItem className='side-info' columnSpan={3}>
-            {renderDeviceHeader(selectedEntity)}
-            <Tabs defaultSelectedItem='flow-tab'>
-              <TabsItem itemKey='flow-tab' label='flow summary'>
-                {this.renderFlowSummaryTable()}
-              </TabsItem>
-              <TabsItem itemKey='other-tab' label='device info'>
-                {this.renderDeviceInfo()}
-              </TabsItem>
-            </Tabs>
-          </GridItem>
-        </Grid>
+        {/*
+        <br />
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <strong>Refresh rate:</strong>
+        </BlockText>
+        <br />
+        <div className='interval-range'>
+          <InputRange
+            formatLabel={value => `${value}s`}
+            maxValue={INTERVAL_SECONDS_MAX}
+            minValue={INTERVAL_SECONDS_MIN}
+            onChange={intervalSlider => this.setState({ intervalSlider })}
+            onChangeComplete={this.handleIntervalSecondsChange}
+            step={1}
+            value={intervalSlider}
+          />
+        </div>
+        */}
       </div>
     );
   }
 
-  renderFlowSummaryTable() {
-    const { detailData, queryAttribute } = this.state;
+  /*
+   * Main Renderer
+   */
+  render() {
+    const { timeRange } = this.props.launcherUrlState;
+    const dataSource = this.props.nerdletUrlState.dataSource || 0;
+    const { intervalSeconds, queryLimit } = this.props.nerdletUrlState;
+    const { account, isLoading } = this.state;
+
+    const DsComponent = (DATA_SOURCES[dataSource] || {}).component; // TODO: || Instructions
 
     return (
-      <Table compact striped>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
-            <Table.HeaderCell>destination</Table.HeaderCell>
-            <Table.HeaderCell>{queryAttribute}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {detailData.map((r, k) => (
-            <Table.Row key={k}>
-              <Table.Cell>{r.source}</Table.Cell>
-              <Table.Cell>{r.target}</Table.Cell>
-              <Table.Cell>
-                {queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+      <div className='background'>
+        <Grid className='fullheight'>
+          <GridItem columnSpan={2}>{this.renderMainMenu()}</GridItem>
+          <GridItem columnSpan={10}>
+            <div className='main-container'>
+              {isLoading ? (
+                <Spinner fillContainer />
+              ) : (
+                <DsComponent
+                  account={account}
+                  intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
+                  queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
+                  timeRange={timeRange}
+                />
+              )}
+            </div>
+          </GridItem>
+        </Grid>
+      </div>
     );
-  }
-
-  renderDeviceInfo() {
-    const { selectedEntity } = this.state;
-
-    return <BlockText>TODO: Link {selectedEntity} back to an Entity via NetworkSample</BlockText>;
   }
 }
