@@ -1,4 +1,4 @@
-import { BlockText, Grid, GridItem, Spinner } from "nr1";
+import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
 import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
@@ -142,11 +142,11 @@ export default class Sflow extends React.Component {
     }
   }
 
-  renderSideMenu() {
+  renderSubMenu() {
     const { queryAttribute } = this.state;
 
     return (
-      <>
+      <div className='top-menu'>
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Show devices with...</strong>
         </BlockText>
@@ -156,16 +156,16 @@ export default class Sflow extends React.Component {
           onChange={this.handleAttributeChange}
           selectedValue={queryAttribute}
         >
-          <div className='radio-option'>
+          <label htmlFor={"throughput"}>
             <Radio value='throughput' />
-            <label htmlFor={"throughput"}>Highest Throughput</label>
-          </div>
-          <div className='radio-option'>
+            Highest Throughput
+          </label>
+          <label htmlFor={"count"}>
             <Radio value='count' />
-            <label htmlFor={"count"}>Most flows collected</label>
-          </div>
+            Most flows collected
+          </label>
         </RadioGroup>
-      </>
+      </div>
     );
   }
 
@@ -194,25 +194,35 @@ export default class Sflow extends React.Component {
       <div className='background'>
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
-            <div className='main-container'>
-              {isLoading ? (
-                <Spinner fillContainer />
-              ) : nodes.length < 1 ? (
-                <div>No results found</div>
-              ) : (
-                <ChordDiagram
-                  componentId={1}
-                  groupColors={nodes.map(n => n.color)}
-                  groupLabels={nodes.map(n => n.name)}
-                  groupOnClick={this.handleChartGroupClick}
-                  height={height}
-                  innerRadius={innerRadius}
-                  matrix={matrix}
-                  outerRadius={outerRadius}
-                  width={width}
-                />
-              )}
-            </div>
+            <Stack
+              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
+              directionType={Stack.DIRECTION_TYPE.VERTICAL}
+            >
+              <StackItem>
+                <div className='sub-menu'>{this.renderSubMenu()}</div>
+              </StackItem>
+              <StackItem>
+                <div className='main-container'>
+                  {isLoading ? (
+                    <Spinner fillContainer />
+                  ) : nodes.length < 1 ? (
+                    <div>No results found</div>
+                  ) : (
+                    <ChordDiagram
+                      componentId={1}
+                      groupColors={nodes.map(n => n.color)}
+                      groupLabels={nodes.map(n => n.name)}
+                      groupOnClick={this.handleChartGroupClick}
+                      height={height}
+                      innerRadius={innerRadius}
+                      matrix={matrix}
+                      outerRadius={outerRadius}
+                      width={width}
+                    />
+                  )}
+                </div>
+              </StackItem>
+            </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
             <div className='side-info'>

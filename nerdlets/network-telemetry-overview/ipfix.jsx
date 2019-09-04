@@ -6,10 +6,11 @@ import {
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
 
-import { BlockText, ChartGroup, Grid, GridItem, HeadingText, LineChart, Modal, Spinner } from "nr1";
+import { BlockText, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
 import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
+import IpfixDetail from "./ipfix-detail";
 import PropTypes from "prop-types";
 import React from "react";
 import { Sankey } from "react-vis";
@@ -114,11 +115,12 @@ export default class Ipfix extends React.Component {
   async handlePeerByChange(peerBy) {
     if (peerBy) {
       await this.setState({ peerBy });
-      this.resetTimer();
+      this.fetchIpfixData();
+      // this.resetTimer();
     }
   }
 
-  createSankeyNrqlQuery() {
+  createNrqlQuery() {
     const { intervalSeconds, queryLimit } = this.props;
     const { peerBy } = this.state;
 
@@ -146,10 +148,7 @@ export default class Ipfix extends React.Component {
 
     this.setState({ isLoading: true });
 
-    const { nodes, links } = await fetchRelationshipFacets(
-      account.id,
-      this.createSankeyNrqlQuery()
-    );
+    const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
     this.setState({
       isLoading: false,
@@ -159,63 +158,31 @@ export default class Ipfix extends React.Component {
   }
 
   /*
-   * Main render
+   * Render detailed modal
    */
   renderDetailCard() {
-    const { account } = this.props;
-    const { detailData, detailHidden, peerBy } = this.state;
+    const account = this.props.account || {};
+    const { detailData, detailHidden, nodes, peerBy } = this.state;
 
-    const throughputQuery =
-      "FROM ipfix" +
-      " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
-      NRQL_IPFIX_WHERE +
-      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
-      " TIMESERIES";
+    if (!account || !detailData || detailHidden) return;
 
-    const destQuery =
-      "FROM ipfix" +
-      " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
-      NRQL_IPFIX_WHERE +
-      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
-      " FACET destinationIPv4Address " +
-      " TIMESERIES";
+    let peerName = (nodes[detailData.sourceId] || {}).name || "";
+    let filter = " AND " + peerBy + " = ";
+    if (peerBy === "bgpSourceAsNumber") {
+      filter += peerName;
+    } else {
+      filter += "'" + peerName + "'";
+    }
 
-    const protocolQuery =
-      "FROM ipfix" +
-      " SELECT count(*) as 'flows'" +
-      NRQL_IPFIX_WHERE +
-      (detailData ? " AND " + peerBy + " = '" + (detailData.source || {}).name + "'" : "") +
-      " FACET cases(" +
-      "   WHERE protocolIdentifier = 1 as 'ICMP', " +
-      "   WHERE protocolIdentifier = 6 as 'TCP'," +
-      "   WHERE protocolIdentifier = 17 as 'UDP'," +
-      "   WHERE protocolIdentifier IS NOT NULL as 'other')" +
-      " TIMESERIES";
+    if ((detailData.source || {}).depth === 1) {
+      filter += " AND destinationIPv4Address = '" + detailData.target.name + "'";
+
+      peerName += " to " + detailData.target.name;
+    }
 
     return (
       <Modal hidden={detailHidden} onClose={this.handleDetailClose}>
-        <div className='side-menu'>
-          <ChartGroup>
-            {renderDeviceHeader(((detailData || {}).source || {}).name, "Network Entity")}
-
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
-            <LineChart
-              accountId={account.id || null}
-              query={throughputQuery}
-              style={{ height: 200 }}
-            />
-
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
-            <LineChart accountId={account.id || null} query={destQuery} style={{ height: 200 }} />
-
-            <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
-            <LineChart
-              accountId={account.id || null}
-              query={protocolQuery}
-              style={{ height: 200 }}
-            />
-          </ChartGroup>
-        </div>
+        <IpfixDetail accountId={account.id} filter={filter} name={peerName} />
       </Modal>
     );
   }
@@ -224,7 +191,7 @@ export default class Ipfix extends React.Component {
     const { peerBy } = this.state;
 
     return (
-      <div className='side-menu'>
+      <div className='top-menu'>
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Show peers by...</strong>
         </BlockText>
@@ -234,31 +201,26 @@ export default class Ipfix extends React.Component {
           onChange={this.handlePeerByChange}
           selectedValue={peerBy}
         >
-          <div className='radio-option'>
+          <label htmlFor={"peerName"}>
             <Radio value='peerName' />
-            <label htmlFor={"peerName"}>Peer Name</label>
-          </div>
-          <div className='radio-option'>
+            Peer Name
+          </label>
+          <label htmlFor={"bgpSourceAsNumber"}>
             <Radio value='bgpSourceAsNumber' />
-            <label htmlFor={"bgpSourceAsNumber"}>AS Number</label>
-          </div>
+            AS Number
+          </label>
         </RadioGroup>
         <br />
       </div>
     );
   }
 
+  /*
+   * Main render
+   */
   render() {
     const { height, width } = this.props;
     const { activeLink, links, nodes, isLoading } = this.state;
-
-    if (isLoading) {
-      return <Spinner fillContainer />;
-    }
-
-    if (nodes.length === 0 || links.length === 0) {
-      return <div>No data found</div>;
-    }
 
     // Add link highlighting
     const renderLinks = links.map((link, linkIndex) => {
@@ -291,17 +253,33 @@ export default class Ipfix extends React.Component {
         {this.renderDetailCard()}
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
-            <div className='main-container'>
-              <Sankey
-                height={height}
-                links={renderLinks}
-                nodes={nodes}
-                onLinkClick={this.handleSankeyLinkClick}
-                onLinkMouseOut={() => this.setState({ activeLink: null })}
-                onLinkMouseOver={node => this.setState({ activeLink: node })}
-                width={width}
-              />
-            </div>
+            <Stack
+              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
+              directionType={Stack.DIRECTION_TYPE.VERTICAL}
+            >
+              <StackItem>
+                <div className='sub-menu'>{this.renderSubMenu()}</div>
+              </StackItem>
+              <StackItem>
+                <div className='main-container'>
+                  {isLoading && nodes.length < 1 ? (
+                    <Spinner fillContainer />
+                  ) : nodes.length < 1 ? (
+                    <div>No results found</div>
+                  ) : (
+                    <Sankey
+                      height={height}
+                      links={renderLinks}
+                      nodes={nodes}
+                      onLinkClick={this.handleSankeyLinkClick}
+                      onLinkMouseOut={() => this.setState({ activeLink: null })}
+                      onLinkMouseOver={node => this.setState({ activeLink: node })}
+                      width={width}
+                    />
+                  )}
+                </div>
+              </StackItem>
+            </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
             <div className='side-info'>

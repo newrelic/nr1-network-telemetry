@@ -17,6 +17,15 @@
   width: 100%;
 }
 
+.sub-menu {
+  background-color: #ffffff;
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  padding: 5px;
+  width: 100%;
+}
+
 .chord-chart {
   font-size: 10px;
 }
@@ -60,6 +69,14 @@
     margin: 5px;
     margin-left: 10px;
   }
+}
+
+.modal {
+  height: 100%;
+}
+
+.side-info-chart {
+  height: 200px;
 }
 
 .account-dropdown {
