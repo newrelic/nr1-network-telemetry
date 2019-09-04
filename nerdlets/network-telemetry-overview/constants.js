@@ -6,7 +6,7 @@ export const INTERVAL_SECONDS_MAX = 60;
 export const INTERVAL_SECONDS_DEFAULT = 30;
 
 export const BLURRED_LINK_OPACITY = 0.3;
-export const FOCUSED_LINK_OPACITY = 0.6;
+export const FOCUSED_LINK_OPACITY = 0.8;
 export const COLOR_END = "#FFC400";
 export const COLOR_START = "#3ED2F2";
 export const COLORS = [

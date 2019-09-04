@@ -1,4 +1,4 @@
-import { BlockText, Button, Grid, GridItem, Spinner, nerdlet } from "nr1";
+import { BlockText, Grid, GridItem, Spinner, nerdlet } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
@@ -15,11 +15,11 @@ import Ipfix from "./ipfix";
 import PropTypes from "prop-types";
 import React from "react";
 import Sflow from "./sflow";
-import debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 
 const DATA_SOURCES = [
-  { name: 'ipfix', component: Ipfix, eventType: 'ipfix', },
-  { name: 'sflow', component: Sflow, eventType: 'sflow', },
+  { component: Ipfix, eventType: "ipfix", name: "ipfix" },
+  { component: Sflow, eventType: "sflow", name: "sflow" },
 ];
 
 export default class NetworkTelemetryNerdlet extends React.Component {
@@ -63,13 +63,13 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   }
 
   // Debounce slider changes so we're not hammering queries
-  handleIntervalSecondsChange = debounce((value) => {
+  handleIntervalSecondsChange = debounce(value => {
     const intervalSeconds = value || INTERVAL_SECONDS_DEFAULT;
 
     if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
       nerdlet.setUrlState({ intervalSeconds });
     }
-  }, 500)
+  }, 500);
 
   handleLimitChange(queryLimit) {
     if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
@@ -104,14 +104,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           onChange={this.handleDataSourceChange}
           selectedValue={dataSource}
         >
-          {
-            DATA_SOURCES.map((v, i) => (
-              <div key={i} className='radio-option'>
-                <Radio value={i} />
-                <label htmlFor={i}>{v.name}</label>
-              </div>
-            ))
-          }
+          {DATA_SOURCES.map((v, i) => (
+            <div className='radio-option' key={i}>
+              <Radio value={i} />
+              <label htmlFor={i}>{v.name}</label>
+            </div>
+          ))}
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
@@ -157,15 +155,6 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   }
 
   /*
-   * Details on the Right
-   */
-  renderSummaryInfo() {
-    const { nodeSummary } = this.state;
-
-    return <div className='side-info'>{nodeSummary || "TODO: Summary Info"}</div>;
-  }
-
-  /*
    * Main Renderer
    */
   render() {
@@ -179,19 +168,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     return (
       <div className='background'>
         <Grid className='fullheight'>
-          <GridItem columnSpan={2}>
-            {this.renderMainMenu()}
-          </GridItem>
+          <GridItem columnSpan={2}>{this.renderMainMenu()}</GridItem>
           <GridItem columnSpan={10}>
             <div className='main-container'>
-              {isLoading ? <Spinner fillContainer /> :
+              {isLoading ? (
+                <Spinner fillContainer />
+              ) : (
                 <DsComponent
                   account={account}
                   intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
                   queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
                   timeRange={timeRange}
                 />
-              }
+              )}
             </div>
           </GridItem>
         </Grid>

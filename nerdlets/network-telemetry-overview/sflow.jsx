@@ -1,15 +1,12 @@
-import * as d3 from "d3";
-
-import { BlockText, Spinner } from "nr1";
-import { COLOR_END, COLOR_START, NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
+import { BlockText, Grid, GridItem, Spinner } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
-import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
+import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
 import ChordDiagram from "react-chord-diagram";
+import { NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
 import PropTypes from "prop-types";
 import React from "react";
-import { Table } from "semantic-ui-react";
-import { fetchNrqlResults } from "../../src/lib/nrql";
+import { fetchRelationshipFacets } from "./fetch";
 import { timeRangeToNrql } from "../../src/components/time-range";
 
 export default class Sflow extends React.Component {
@@ -37,6 +34,8 @@ export default class Sflow extends React.Component {
       detailData: [],
       entities: [],
       isLoading: true,
+      links: [],
+      nodes: [],
       queryAttribute: "throughput",
       relationships: [],
       selectedEntity: null,
@@ -72,61 +71,15 @@ export default class Sflow extends React.Component {
 
     if (!account || !account.id) return;
 
-    this.setState({ detailData: [] });
+    this.setState({ isLoading: true });
 
-    const results = await fetchNrqlResults(account.id, this.createNrqlQuery());
-
-    const entities = [];
-    const detailData = [];
-
-    const data = results.reduce((acc, d) => {
-      const source = d.facet[0];
-      const target = d.facet[1];
-
-      if (entities.indexOf(source) === -1) entities.push(source);
-      const s = entities.indexOf(source);
-
-      if (entities.indexOf(target) === -1) entities.push(target);
-      const t = entities.indexOf(target);
-
-      if (!Array.isArray(acc[s])) acc[s] = [];
-
-      const value = d.value || 0;
-      acc[s][t] = value;
-      detailData.push({ source, target, value });
-
-      return acc;
-    }, []);
-
-    const entityCount = entities.length;
-    const colorFunc = this.colorForEntity(entityCount);
-
-    const entityColors = [];
-    const relationships = [];
-    for (let y = 0; y < entityCount; y++) {
-      entityColors.push(colorFunc(y));
-      relationships[y] = [];
-      for (let x = 0; x < entityCount; x++) {
-        relationships[y][x] = (data[y] || [])[x] || 0;
-      }
-    }
+    const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
     this.setState({
-      detailData,
-      entities,
-      entityColors,
       isLoading: false,
-      relationships,
+      links,
+      nodes,
     });
-  }
-
-  // Returns a FUNCTION that generates a color...
-  colorForEntity(entityCount) {
-    return d3.scale
-      .linear()
-      .domain([1, entityCount])
-      .interpolate(d3.interpolateHsl)
-      .range([d3.rgb(COLOR_START), d3.rgb(COLOR_END)]);
   }
 
   createNrqlQuery() {
@@ -217,59 +170,58 @@ export default class Sflow extends React.Component {
   }
 
   render() {
-    const { entities, entityColors, isLoading, relationships } = this.state;
-    const width = 600;
-    const height = 700;
+    const { nodes, links } = this.state;
+    const { isLoading, selectedEntity } = this.state;
+    const { height, width } = this.props;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
+    const entityCount = nodes.length;
+    const matrix = [];
+
+    // create a matrix of zeros
+    for (let x = 0; x <= entityCount; x++) {
+      matrix[x] = [];
+      for (let y = 0; y <= entityCount; y++) {
+        matrix[x][y] = 0;
+      }
+    }
+
+    // Add the links
+    links.forEach(link => (matrix[link.source][link.target] = link.value));
+
     return (
-      <div>
-        {isLoading ? (
-          <Spinner fillContainer />
-        ) : entities.length < 1 ? (
-          <div>No results found</div>
-        ) : (
-          <ChordDiagram
-            componentId={1}
-            groupColors={entityColors}
-            groupLabels={entities}
-            groupOnClick={this.handleChartGroupClick}
-            height={height}
-            innerRadius={innerRadius}
-            matrix={relationships}
-            outerRadius={outerRadius}
-            width={width}
-          />
-        )}
+      <div className='background'>
+        <Grid className='fullheight'>
+          <GridItem columnSpan={8}>
+            <div className='main-container'>
+              {isLoading ? (
+                <Spinner fillContainer />
+              ) : nodes.length < 1 ? (
+                <div>No results found</div>
+              ) : (
+                <ChordDiagram
+                  componentId={1}
+                  groupColors={nodes.map(n => n.color)}
+                  groupLabels={nodes.map(n => n.name)}
+                  groupOnClick={this.handleChartGroupClick}
+                  height={height}
+                  innerRadius={innerRadius}
+                  matrix={matrix}
+                  outerRadius={outerRadius}
+                  width={width}
+                />
+              )}
+            </div>
+          </GridItem>
+          <GridItem columnSpan={4}>
+            <div className='side-info'>
+              {renderDeviceHeader(selectedEntity)}
+              {renderSummaryInfo(nodes)}
+            </div>
+          </GridItem>
+        </Grid>
       </div>
-    );
-  }
-
-  renderFlowSummaryTable() {
-    const { detailData, queryAttribute } = this.state;
-
-    return (
-      <Table compact striped>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell sorted='ascending'>source</Table.HeaderCell>
-            <Table.HeaderCell>destination</Table.HeaderCell>
-            <Table.HeaderCell>{queryAttribute}</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {detailData.map((r, k) => (
-            <Table.Row key={k}>
-              <Table.Cell>{r.source}</Table.Cell>
-              <Table.Cell>{r.target}</Table.Cell>
-              <Table.Cell>
-                {queryAttribute === "throughput" ? bitsToSize(r.value) : intToSize(r.value)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
     );
   }
 

@@ -1,22 +1,19 @@
 import {
   BLURRED_LINK_OPACITY,
-  COLORS,
   FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
   NRQL_IPFIX_WHERE,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
 
-import { BlockText, ChartGroup, HeadingText, LineChart, Modal, Spinner } from "nr1";
+import { BlockText, ChartGroup, Grid, GridItem, HeadingText, LineChart, Modal, Spinner } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
+import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
 import PropTypes from "prop-types";
 import React from "react";
 import { Sankey } from "react-vis";
-import { Table } from "semantic-ui-react";
-import { bitsToSize } from "../../src/lib/bytes-to-size";
-import { fetchNrqlResults } from "../../src/lib/nrql";
-import { renderDeviceHeader } from "./common";
+import { fetchRelationshipFacets } from "./fetch";
 
 export default class Ipfix extends React.Component {
   static propTypes = {
@@ -43,10 +40,8 @@ export default class Ipfix extends React.Component {
       detailHidden: true,
       isLoading: true,
       links: [],
-      nodeSummary: [],
       nodes: [],
       peerBy: "peerName",
-      reset: false,
     };
 
     this.handleDetailClose = this.handleDetailClose.bind(this);
@@ -55,7 +50,7 @@ export default class Ipfix extends React.Component {
   }
 
   componentDidMount() {
-      this.fetchIpfixData();
+    this.fetchIpfixData();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -68,8 +63,8 @@ export default class Ipfix extends React.Component {
       queryLimit !== prevProps.queryLimit ||
       peerBy !== prevState.peerBy
     ) {
-      console.log(this.props);
-      //this.resetTimer(this.fetchIpfixData);
+      // this.resetTimer(this.fetchIpfixData);
+      this.fetchIpfixData();
     }
   }
 
@@ -146,80 +141,19 @@ export default class Ipfix extends React.Component {
     if (!this.props) return;
 
     const account = this.props.account;
-    const { reset } = this.state;
-
-    console.log(account);
 
     if (!account || !account.id) return;
 
-    const nodeSummary = reset ? [] : this.state.nodeSummary;
-    if (reset) this.setState({ reset: false });
+    this.setState({ isLoading: true });
 
-    const results = await fetchNrqlResults(account.id, this.createSankeyNrqlQuery());
-
-    // Bail if we get nothing
-    if (results.length < 1) {
-      return;
-    }
-
-    const links = [];
-    const nodes = [];
-
-    results.forEach(row => {
-      // Collect nodes
-      const ids = (row.facet || []).map(f => {
-        const id = nodes.findIndex(node => node.name === f);
-        if (id < 0) return nodes.push({ name: f }) - 1;
-
-        return id;
-      });
-
-      const value = row.value;
-      let sourceId = nodeSummary.findIndex(node => node.name === nodes[ids[0]].name);
-      if (sourceId >= 0) {
-        nodeSummary[sourceId].value += value;
-      } else {
-        sourceId =
-          nodeSummary.push({
-            color: COLORS[nodeSummary.length % COLORS.length],
-            name: nodes[ids[0]].name,
-            value,
-          }) - 1;
-      }
-
-      // Update existing links (AS => Router)
-      const sa = links.findIndex(link => link.source === ids[0] && link.target === ids[1]);
-      if (sa >= 0) {
-        links[sa].value += value;
-      } else {
-        links.push({
-          color: nodeSummary[sourceId].color,
-          source: ids[0],
-          sourceId,
-          target: ids[1],
-          value,
-        });
-      }
-
-      // Update existing links (Router => IP)
-      const ad = links.findIndex(link => link.source === ids[1] && link.target === ids[2]);
-      if (ad >= 0) {
-        links[ad].value += value;
-      } else {
-        links.push({
-          color: nodeSummary[sourceId].color,
-          source: ids[1],
-          sourceId,
-          target: ids[2],
-          value,
-        });
-      }
-    });
+    const { nodes, links } = await fetchRelationshipFacets(
+      account.id,
+      this.createSankeyNrqlQuery()
+    );
 
     this.setState({
       isLoading: false,
       links,
-      nodeSummary,
       nodes,
     });
   }
@@ -314,38 +248,6 @@ export default class Ipfix extends React.Component {
     );
   }
 
-  renderSummaryInfo() {
-    const { nodeSummary } = this.state;
-
-    return (
-      <div className='side-info'>
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Summary</strong>
-        </BlockText>
-        <Table compact striped>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>&nbsp;</Table.HeaderCell>
-              <Table.HeaderCell>Source</Table.HeaderCell>
-              <Table.HeaderCell>Throughput</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {nodeSummary
-              .sort((a, b) => (a.value < b.value ? 1 : -1))
-              .map((n, k) => (
-                <Table.Row key={k}>
-                  <Table.Cell style={{ color: n.color }}>*</Table.Cell>
-                  <Table.Cell>{n.name || "(Unknown)"}</Table.Cell>
-                  <Table.Cell>{bitsToSize(n.value)}</Table.Cell>
-                </Table.Row>
-              ))}
-          </Table.Body>
-        </Table>
-      </div>
-    );
-  }
-
   render() {
     const { height, width } = this.props;
     const { activeLink, links, nodes, isLoading } = this.state;
@@ -385,17 +287,29 @@ export default class Ipfix extends React.Component {
     });
 
     return (
-      <div>
+      <div className='background'>
         {this.renderDetailCard()}
-        <Sankey
-          height={height}
-          links={renderLinks}
-          nodes={nodes}
-          onLinkClick={this.handleSankeyLinkClick}
-          onLinkMouseOut={() => this.setState({ activeLink: null })}
-          onLinkMouseOver={node => this.setState({ activeLink: node })}
-          width={width}
-        />
+        <Grid className='fullheight'>
+          <GridItem columnSpan={8}>
+            <div className='main-container'>
+              <Sankey
+                height={height}
+                links={renderLinks}
+                nodes={nodes}
+                onLinkClick={this.handleSankeyLinkClick}
+                onLinkMouseOut={() => this.setState({ activeLink: null })}
+                onLinkMouseOver={node => this.setState({ activeLink: node })}
+                width={width}
+              />
+            </div>
+          </GridItem>
+          <GridItem columnSpan={4}>
+            <div className='side-info'>
+              {renderDeviceHeader()}
+              {renderSummaryInfo(nodes)}
+            </div>
+          </GridItem>
+        </Grid>
       </div>
     );
   }
