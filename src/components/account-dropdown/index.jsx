@@ -2,6 +2,7 @@ import {
   AccountsQuery,
   Dropdown,
   DropdownItem,
+  NerdGraphQuery,
   Spinner,
   UserStorageMutation,
   UserStorageQuery,
@@ -11,9 +12,21 @@ import PropTypes from "prop-types";
 import React from "react";
 
 const documentId = "default-account";
+// Account query with extra data than AccountsQuery returns
+const ACCOUNT_QUERY = `
+{
+  actor {
+    accounts {
+      name
+      id
+      reportingEventTypes
+    }
+  }
+}`;
 
 export class AccountDropdown extends React.Component {
   static propTypes = {
+    accountFilter: PropTypes.func,
     className: PropTypes.any,
     collection: PropTypes.string,
     onSelect: PropTypes.func,
@@ -23,6 +36,7 @@ export class AccountDropdown extends React.Component {
   };
 
   static defaultProps = {
+    accountFilter: ((account) => true),
     collection: "newrelic",
     title: "Select account...",
   };
@@ -101,12 +115,13 @@ export class AccountDropdown extends React.Component {
   }
 
   async loadAccounts() {
-    const result = await AccountsQuery.query();
-    const accounts = result.data.actor.accounts;
+    const result = await NerdGraphQuery.query({query: ACCOUNT_QUERY });
+    const accounts = (((result || {}).data || {}).actor || {}).accounts || [];
+
     this.setState({
       accounts,
       accountsById: accounts.reduce((result, account) => {
-        result[account.id] = account.name;
+        result[account.id] = account;
         return result;
       }, {}),
     });
@@ -141,14 +156,14 @@ export class AccountDropdown extends React.Component {
   }
 
   render() {
-    const { className, style, title } = this.props;
+    const { accountFilter, className, style, title } = this.props;
     const { accounts, defaultAccount, selected } = this.state;
 
     if (!accounts || defaultAccount === undefined) {
       return <Spinner fillcontainer />;
     }
 
-    const items = accounts.map(account => (
+    const items = accounts.filter(accountFilter).map(account => (
       <DropdownItem key={account.id} onClick={() => this.select(account)}>
         {account.name}
       </DropdownItem>
