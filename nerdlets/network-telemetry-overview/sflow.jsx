@@ -243,7 +243,7 @@ export default class Sflow extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary columns={summaryColumns} data={summaryData} />
+            <NetworkSummary columns={summaryColumns} data={summaryData} height={height} />
           </GridItem>
         </Grid>
       </div>

@@ -9,6 +9,7 @@ export default class NetworkSummary extends React.Component {
   static propTypes = {
     columns: PropTypes.array,
     data: PropTypes.array,
+    height: PropTypes.number,
     selectedNodeId: PropTypes.number,
   };
 
@@ -19,6 +20,7 @@ export default class NetworkSummary extends React.Component {
       { align: "right", data: "value", label: "Throughput" },
     ],
     data: [],
+    height: "100%",
     selectedNodeId: null,
   };
 
@@ -26,7 +28,7 @@ export default class NetworkSummary extends React.Component {
    * Main render
    */
   render() {
-    const { columns, data, selectedNodeId } = this.props;
+    const { columns, data, height, selectedNodeId } = this.props;
 
     const deviceName = (data[selectedNodeId] || {}).name || "All Devices";
     const deviceType = (data[selectedNodeId] || {}).type || "Device";
@@ -54,7 +56,11 @@ export default class NetworkSummary extends React.Component {
                     </Table.Cell>
                   );
                 default:
-                  return <Table.Cell key={`${idx}-${i}`}>{node[c.data] || "(unknown)"}</Table.Cell>;
+                  return (
+                    <Table.Cell fixed key={`${idx}-${i}`}>
+                      {node[c.data] || "(unknown)"}
+                    </Table.Cell>
+                  );
               }
             })}
           </Table.Row>
@@ -64,7 +70,7 @@ export default class NetworkSummary extends React.Component {
       }, []);
 
     return (
-      <div className='network-summary'>
+      <div className='network-summary' style={{ height }}>
         {renderDeviceHeader(deviceName, deviceType)}
         <Table compact singleLine striped>
           <Table.Header>
