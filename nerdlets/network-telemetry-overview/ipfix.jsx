@@ -2,6 +2,7 @@ import {
   BLURRED_LINK_OPACITY,
   FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
+  INTERVAL_SECONDS_MIN,
   NRQL_IPFIX_WHERE,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
@@ -51,7 +52,7 @@ export default class Ipfix extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchIpfixData();
+    this.startTimer();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -64,8 +65,7 @@ export default class Ipfix extends React.Component {
       queryLimit !== prevProps.queryLimit ||
       peerBy !== prevState.peerBy
     ) {
-      // this.resetTimer(this.fetchIpfixData);
-      this.fetchIpfixData();
+      this.resetTimer();
     }
   }
 
@@ -76,17 +76,16 @@ export default class Ipfix extends React.Component {
   /*
    * Timer
    */
-  startTimer(runThis) {
-    if (runThis) {
-      const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
+  startTimer() {
+    const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
 
-      if (intervalSeconds > 0) {
-        // Fire right away, then schedule
-        runThis();
-        this.refresh = setInterval(async () => {
-          runThis();
-        }, intervalSeconds * 1000);
-      }
+    if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
+      // Fire right away, then schedule
+      this.fetchIpfixData();
+
+      this.refresh = setInterval(async () => {
+        this.fetchIpfixData();
+      }, intervalSeconds * 1000);
     }
   }
 
@@ -97,8 +96,7 @@ export default class Ipfix extends React.Component {
   async resetTimer() {
     await this.setState({ isLoading: true });
     this.stopTimer();
-    this.resetTimer(this.fetchIpfixData);
-    this.setState({ isLoading: false });
+    this.startTimer();
   }
 
   /*
@@ -259,7 +257,7 @@ export default class Ipfix extends React.Component {
               </StackItem>
               <StackItem>
                 <div className='main-container'>
-                  {isLoading && nodes.length < 1 ? (
+                  {isLoading ? (
                     <Spinner fillContainer />
                   ) : nodes.length < 1 ? (
                     <div>No results found</div>

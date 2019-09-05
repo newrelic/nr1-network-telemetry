@@ -1,8 +1,12 @@
 import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
+import {
+  INTERVAL_SECONDS_DEFAULT,
+  INTERVAL_SECONDS_MIN,
+  NRQL_QUERY_LIMIT_DEFAULT,
+} from "./constants";
 import { Radio, RadioGroup } from "react-radio-group";
 
 import ChordDiagram from "react-chord-diagram";
-import { NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
 import NetworkSummary from "./network-summary";
 import PropTypes from "prop-types";
 import React from "react";
@@ -43,7 +47,7 @@ export default class Sflow extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchChordData();
+    this.startTimer();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -56,19 +60,47 @@ export default class Sflow extends React.Component {
       queryLimit !== prevProps.queryLimit ||
       timeRange !== prevProps.timeRange
     ) {
-      this.fetchChordData();
+      this.resetTimer();
     }
+  }
+
+  componentWillUnmount() {
+    this.stopTimer();
+  }
+
+  /*
+   * Timer
+   */
+  startTimer() {
+    const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
+
+    if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
+      // Fire right away, then schedule
+      this.fetchData();
+
+      this.refresh = setInterval(async () => {
+        this.fetchData();
+      }, intervalSeconds * 1000);
+    }
+  }
+
+  stopTimer() {
+    if (this.refresh) clearInterval(this.refresh);
+  }
+
+  async resetTimer() {
+    await this.setState({ isLoading: true });
+    this.stopTimer();
+    this.startTimer();
   }
 
   /*
    * fetch data
    */
-  async fetchChordData() {
+  async fetchData() {
     const { account } = this.props;
 
     if (!account || !account.id) return;
-
-    this.setState({ isLoading: true });
 
     const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
