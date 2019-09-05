@@ -1,7 +1,7 @@
 import { BlockText, Grid, GridItem, Spinner, nerdlet } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
-  // INTERVAL_SECONDS_MAX,
+  INTERVAL_SECONDS_MAX,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
   NRQL_QUERY_LIMIT_MAX,
@@ -10,7 +10,7 @@ import {
 import { Radio, RadioGroup } from "react-radio-group";
 
 import { AccountDropdown } from "../../src/components/account-dropdown";
-// import InputRange from "react-input-range";
+import InputRange from "react-input-range";
 import Ipfix from "./ipfix";
 import PropTypes from "prop-types";
 import React from "react";
@@ -77,13 +77,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }
 
+  accountFilter(account) {
+    return DATA_SOURCES.reduce((found, source) => {
+      return found || account.reportingEventTypes.includes(source.eventType);
+    }, false);
+  }
+
   /*
    * Global nerdlet menu items
    */
   renderMainMenu() {
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
     const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
-    // const { intervalSlider } = this.state;
+    const { intervalSlider } = this.state;
 
     return (
       <div className='side-menu'>
@@ -91,6 +97,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           <strong>Account</strong>
         </BlockText>
         <AccountDropdown
+          accountFilter={this.accountFilter}
           className='account-dropdown'
           onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
@@ -134,7 +141,6 @@ export default class NetworkTelemetryNerdlet extends React.Component {
             <label htmlFor={"100"}>100 devices</label>
           </div>
         </RadioGroup>
-        {/*
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Refresh rate:</strong>
@@ -151,7 +157,6 @@ export default class NetworkTelemetryNerdlet extends React.Component {
             value={intervalSlider}
           />
         </div>
-        */}
       </div>
     );
   }

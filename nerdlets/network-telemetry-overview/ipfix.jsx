@@ -2,15 +2,16 @@ import {
   BLURRED_LINK_OPACITY,
   FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
+  INTERVAL_SECONDS_MIN,
   NRQL_IPFIX_WHERE,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
 
 import { BlockText, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
-import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
 import IpfixDetail from "./ipfix-detail";
+import NetworkSummary from "./network-summary";
 import PropTypes from "prop-types";
 import React from "react";
 import { Sankey } from "react-vis";
@@ -51,7 +52,7 @@ export default class Ipfix extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchIpfixData();
+    this.startTimer();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -64,8 +65,7 @@ export default class Ipfix extends React.Component {
       queryLimit !== prevProps.queryLimit ||
       peerBy !== prevState.peerBy
     ) {
-      // this.resetTimer(this.fetchIpfixData);
-      this.fetchIpfixData();
+      this.resetTimer();
     }
   }
 
@@ -76,17 +76,16 @@ export default class Ipfix extends React.Component {
   /*
    * Timer
    */
-  startTimer(runThis) {
-    if (runThis) {
-      const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
+  startTimer() {
+    const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
 
-      if (intervalSeconds > 0) {
-        // Fire right away, then schedule
-        runThis();
-        this.refresh = setInterval(async () => {
-          runThis();
-        }, intervalSeconds * 1000);
-      }
+    if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
+      // Fire right away, then schedule
+      this.fetchIpfixData();
+
+      this.refresh = setInterval(async () => {
+        this.fetchIpfixData();
+      }, intervalSeconds * 1000);
     }
   }
 
@@ -97,8 +96,7 @@ export default class Ipfix extends React.Component {
   async resetTimer() {
     await this.setState({ isLoading: true });
     this.stopTimer();
-    this.resetTimer(this.fetchIpfixData);
-    this.setState({ isLoading: false });
+    this.startTimer();
   }
 
   /*
@@ -141,12 +139,9 @@ export default class Ipfix extends React.Component {
 
   async fetchIpfixData() {
     if (!this.props) return;
-
     const account = this.props.account;
 
     if (!account || !account.id) return;
-
-    this.setState({ isLoading: true });
 
     const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
@@ -176,7 +171,6 @@ export default class Ipfix extends React.Component {
 
     if ((detailData.source || {}).depth === 1) {
       filter += " AND destinationIPv4Address = '" + detailData.target.name + "'";
-
       peerName += " to " + detailData.target.name;
     }
 
@@ -210,7 +204,8 @@ export default class Ipfix extends React.Component {
             AS Number
           </label>
         </RadioGroup>
-        <br />
+
+        <div className='refresh-controls'></div>
       </div>
     );
   }
@@ -262,7 +257,7 @@ export default class Ipfix extends React.Component {
               </StackItem>
               <StackItem>
                 <div className='main-container'>
-                  {isLoading && nodes.length < 1 ? (
+                  {isLoading ? (
                     <Spinner fillContainer />
                   ) : nodes.length < 1 ? (
                     <div>No results found</div>
@@ -282,10 +277,7 @@ export default class Ipfix extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <div className='side-info'>
-              {renderDeviceHeader()}
-              {renderSummaryInfo(nodes)}
-            </div>
+            <NetworkSummary data={nodes} />
           </GridItem>
         </Grid>
       </div>
