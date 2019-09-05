@@ -8,9 +8,9 @@ import {
 
 import { BlockText, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
-import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
 import IpfixDetail from "./ipfix-detail";
+import NetworkSummary from "./network-summary";
 import PropTypes from "prop-types";
 import React from "react";
 import { Sankey } from "react-vis";
@@ -141,12 +141,9 @@ export default class Ipfix extends React.Component {
 
   async fetchIpfixData() {
     if (!this.props) return;
-
     const account = this.props.account;
 
     if (!account || !account.id) return;
-
-    this.setState({ isLoading: true });
 
     const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
@@ -176,7 +173,6 @@ export default class Ipfix extends React.Component {
 
     if ((detailData.source || {}).depth === 1) {
       filter += " AND destinationIPv4Address = '" + detailData.target.name + "'";
-
       peerName += " to " + detailData.target.name;
     }
 
@@ -210,7 +206,8 @@ export default class Ipfix extends React.Component {
             AS Number
           </label>
         </RadioGroup>
-        <br />
+
+        <div className='refresh-controls'></div>
       </div>
     );
   }
@@ -282,10 +279,7 @@ export default class Ipfix extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <div className='side-info'>
-              {renderDeviceHeader()}
-              {renderSummaryInfo(nodes)}
-            </div>
+            <NetworkSummary data={nodes} />
           </GridItem>
         </Grid>
       </div>

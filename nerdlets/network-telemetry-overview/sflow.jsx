@@ -1,9 +1,9 @@
 import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
-import { renderDeviceHeader, renderSummaryInfo } from "./common";
 
 import ChordDiagram from "react-chord-diagram";
 import { NRQL_QUERY_LIMIT_DEFAULT } from "./constants";
+import NetworkSummary from "./network-summary";
 import PropTypes from "prop-types";
 import React from "react";
 import { fetchRelationshipFacets } from "./fetch";
@@ -31,14 +31,11 @@ export default class Sflow extends React.Component {
     super(props);
 
     this.state = {
-      detailData: [],
-      entities: [],
       isLoading: true,
       links: [],
       nodes: [],
       queryAttribute: "throughput",
-      relationships: [],
-      selectedEntity: null,
+      selectedNodeId: -1,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -111,35 +108,10 @@ export default class Sflow extends React.Component {
   }
 
   handleChartGroupClick(id) {
-    const { entities, relationships, selectedEntity } = this.state;
+    const { selectedNodeId } = this.state;
 
-    const newEntity = entities[id];
-
-    // Unselect on repeated click
-    if (newEntity === selectedEntity) {
-      // all rows, all columns
-      const detailData = relationships.flatMap(row =>
-        row.reduce((acc, r, k) => {
-          if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-          return acc;
-        }, [])
-      );
-      this.setState({ detailData, selectedEntity: "" });
-    } else {
-      // id row, all columns
-      const sourceIds = (relationships[id] || []).reduce((acc, r, k) => {
-        if (r !== 0) acc.push({ source: entities[k], target: newEntity, value: r });
-        return acc;
-      }, []);
-
-      // all rows, id column
-      const targetIds = relationships.reduce((acc, r, k) => {
-        if (r[id] !== 0) acc.push({ source: newEntity, target: entities[k], value: r[id] });
-        return acc;
-      }, []);
-
-      this.setState({ detailData: [...targetIds, ...sourceIds], selectedEntity: newEntity });
-    }
+    if (id === selectedNodeId) this.setState({ selectedNodeId: -1 });
+    else this.setState({ selectedNodeId: id });
   }
 
   renderSubMenu() {
@@ -170,8 +142,7 @@ export default class Sflow extends React.Component {
   }
 
   render() {
-    const { nodes, links } = this.state;
-    const { isLoading, selectedEntity } = this.state;
+    const { isLoading, nodes, links, queryAttribute, selectedNodeId } = this.state;
     const { height, width } = this.props;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
@@ -189,6 +160,21 @@ export default class Sflow extends React.Component {
 
     // Add the links
     links.forEach(link => (matrix[link.source][link.target] = link.value));
+
+    const summaryColumns = [
+      { align: "center", data: "color", label: null },
+      { align: "left", data: "source", label: "source" },
+      { align: "left", data: "target", label: "target" },
+      { align: "right", data: "value", label: queryAttribute },
+    ];
+
+    const summaryData = links
+      .filter(l =>
+        selectedNodeId < 0 ? true : l.source === selectedNodeId || l.target === selectedNodeId
+      )
+      .map(l => {
+        return { ...l, source: nodes[l.source].name, target: nodes[l.target].name };
+      });
 
     return (
       <div className='background'>
@@ -225,19 +211,10 @@ export default class Sflow extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <div className='side-info'>
-              {renderDeviceHeader(selectedEntity)}
-              {renderSummaryInfo(nodes)}
-            </div>
+            <NetworkSummary columns={summaryColumns} data={summaryData} />
           </GridItem>
         </Grid>
       </div>
     );
-  }
-
-  renderDeviceInfo() {
-    const { selectedEntity } = this.state;
-
-    return <BlockText>TODO: Link {selectedEntity} back to an Entity via NetworkSample</BlockText>;
   }
 }

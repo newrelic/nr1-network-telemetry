@@ -65,23 +65,53 @@
   min-width: 190px;
 }
 
-.side-info {
+.network-summary {
   background-color: #ffffff;
   height: 100%;
-  padding: 5px;
 
   label {
     display: block;
   }
 
-  .minor-heading {
-    color: #8e9494;
-    font-size: 12px;
-  }
-
   .detail {
     margin: 5px;
     margin-left: 10px;
+  }
+
+  .color-circle {
+    border-radius: 50%;
+    display: inline-block;
+    height: 6px;
+    margin: 5px;
+    width: 6px;
+  }
+
+  .ui.table {
+    border-radius: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+  }
+}
+.network-summary__header {
+  padding: 5px;
+
+  display: flex;
+  .ic-Icon {
+    margin-top: 2px;
+    height: 100%;
+  }
+}
+.network-summary__header-name {
+  margin: 0px 5px;
+
+  p {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .sub-heading {
+    color: #8e9494;
+    font-size: 12px;
   }
 }
 
