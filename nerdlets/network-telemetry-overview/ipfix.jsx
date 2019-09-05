@@ -262,22 +262,35 @@ export default class Ipfix extends React.Component {
                   ) : nodes.length < 1 ? (
                     <div>No results found</div>
                   ) : (
-                    <Sankey
-                      height={height}
-                      links={renderLinks}
-                      nodes={nodes}
-                      onLinkClick={this.handleSankeyLinkClick}
-                      onLinkMouseOut={() => this.setState({ activeLink: null })}
-                      onLinkMouseOver={node => this.setState({ activeLink: node })}
-                      width={width}
-                    />
+                    <div>
+                      <div style={{ display: "flex", marginTop: "5px", width: "100%" }}>
+                        <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
+                          Peer
+                        </div>
+                        <div style={{ fontWeight: "600", textAlign: "center", width: "34%" }}>
+                          Router
+                        </div>
+                        <div style={{ fontWeight: "600", textAlign: "right", width: "33%" }}>
+                          Destination IP
+                        </div>
+                      </div>
+                      <Sankey
+                        height={height}
+                        links={renderLinks}
+                        nodes={nodes}
+                        onLinkClick={this.handleSankeyLinkClick}
+                        onLinkMouseOut={() => this.setState({ activeLink: null })}
+                        onLinkMouseOver={node => this.setState({ activeLink: node })}
+                        width={width}
+                      />
+                    </div>
                   )}
                 </div>
               </StackItem>
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary data={nodes} />
+            <NetworkSummary data={nodes} height={height} />
           </GridItem>
         </Grid>
       </div>

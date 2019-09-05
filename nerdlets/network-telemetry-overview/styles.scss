@@ -68,6 +68,8 @@
 .network-summary {
   background-color: #ffffff;
   height: 100%;
+  overflow-y: scroll;
+  overflow-x: none;
 
   label {
     display: block;
