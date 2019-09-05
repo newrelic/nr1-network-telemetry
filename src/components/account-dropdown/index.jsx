@@ -10,12 +10,12 @@ import {
 import PropTypes from "prop-types";
 import React from "react";
 
-const collection = "newrelic";
 const documentId = "default-account";
 
 export class AccountDropdown extends React.Component {
   static propTypes = {
     className: PropTypes.any,
+    collection: PropTypes.string,
     onSelect: PropTypes.func,
     style: PropTypes.any,
     title: PropTypes.string,
@@ -23,6 +23,7 @@ export class AccountDropdown extends React.Component {
   };
 
   static defaultProps = {
+    collection: "newrelic",
     title: "Select account...",
   };
 
@@ -90,6 +91,8 @@ export class AccountDropdown extends React.Component {
   }
 
   async loadDefaultAccount() {
+    const { collection } = this.props;
+
     const result = await UserStorageQuery.query({ collection, documentId });
     const id = ((((result.data || {}).actor || {}).nerdStorage || {}).document || {}).id || null;
     this.setState(() => ({
@@ -110,6 +113,8 @@ export class AccountDropdown extends React.Component {
   }
 
   async updateDefaultAccount(account) {
+    const { collection } = this.props;
+
     await UserStorageMutation.mutate({
       actionType: UserStorageMutation.ACTION_TYPE.WRITE_DOCUMENT,
       collection,
