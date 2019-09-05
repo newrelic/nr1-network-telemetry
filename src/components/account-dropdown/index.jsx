@@ -1,5 +1,4 @@
 import {
-  AccountsQuery,
   Dropdown,
   DropdownItem,
   NerdGraphQuery,
@@ -36,7 +35,7 @@ export class AccountDropdown extends React.Component {
   };
 
   static defaultProps = {
-    accountFilter: ((account) => true),
+    accountFilter: account => true,
     collection: "newrelic",
     title: "Select account...",
   };
@@ -115,7 +114,7 @@ export class AccountDropdown extends React.Component {
   }
 
   async loadAccounts() {
-    const result = await NerdGraphQuery.query({query: ACCOUNT_QUERY });
+    const result = await NerdGraphQuery.query({ query: ACCOUNT_QUERY });
     const accounts = (((result || {}).data || {}).actor || {}).accounts || [];
 
     this.setState({

@@ -77,6 +77,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }
 
+  accountFilter(account) {
+    return DATA_SOURCES.reduce((found, source) => {
+      return found || account.reportingEventTypes.includes(source.eventType);
+    }, false);
+  }
+
   /*
    * Global nerdlet menu items
    */
@@ -91,6 +97,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           <strong>Account</strong>
         </BlockText>
         <AccountDropdown
+          accountFilter={this.accountFilter}
           className='account-dropdown'
           onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
