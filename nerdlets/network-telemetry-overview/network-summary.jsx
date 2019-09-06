@@ -70,18 +70,20 @@ export default class NetworkSummary extends React.Component {
       }, []);
 
     return (
-      <div className='network-summary' style={{ height }}>
+      <div>
         {renderDeviceHeader(deviceName, deviceType)}
-        <Table compact singleLine striped>
-          <Table.Header>
-            <Table.Row>
-              {columns.map((c, i) => (
-                <Table.HeaderCell key={i}>{c.label || " "}</Table.HeaderCell>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>{rows.map(row => row)}</Table.Body>
-        </Table>
+        <div className='network-summary' style={{ height }}>
+          <Table compact singleLine striped>
+            <Table.Header>
+              <Table.Row>
+                {columns.map((c, i) => (
+                  <Table.HeaderCell key={i}>{c.label || " "}</Table.HeaderCell>
+                ))}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>{rows.map(row => row)}</Table.Body>
+          </Table>
+        </div>
       </div>
     );
   }
