@@ -290,7 +290,12 @@ export default class Ipfix extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary data={nodes} height={height} />
+            <NetworkSummary
+              data={nodes}
+              deviceName={"All Peers"}
+              deviceType={"Network entity"}
+              height={height}
+            />
           </GridItem>
         </Grid>
       </div>

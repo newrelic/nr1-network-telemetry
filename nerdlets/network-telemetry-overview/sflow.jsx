@@ -208,6 +208,8 @@ export default class Sflow extends React.Component {
         return { ...l, source: nodes[l.source].name, target: nodes[l.target].name };
       });
 
+    const deviceName = selectedNodeId >= 0 ? (nodes[selectedNodeId] || {}).name : null;
+
     return (
       <div className='background'>
         <Grid className='fullheight'>
@@ -243,7 +245,12 @@ export default class Sflow extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary columns={summaryColumns} data={summaryData} height={height} />
+            <NetworkSummary
+              columns={summaryColumns}
+              data={summaryData}
+              deviceName={deviceName}
+              height={height}
+            />
           </GridItem>
         </Grid>
       </div>

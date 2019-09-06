@@ -9,8 +9,9 @@ export default class NetworkSummary extends React.Component {
   static propTypes = {
     columns: PropTypes.array,
     data: PropTypes.array,
+    deviceName: PropTypes.string,
+    deviceType: PropTypes.string,
     height: PropTypes.number,
-    selectedNodeId: PropTypes.number,
   };
 
   static defaultProps = {
@@ -20,6 +21,8 @@ export default class NetworkSummary extends React.Component {
       { align: "right", data: "value", label: "Throughput" },
     ],
     data: [],
+    deviceName: "All Devices",
+    deviceType: "Device",
     height: "100%",
     selectedNodeId: null,
   };
@@ -28,10 +31,7 @@ export default class NetworkSummary extends React.Component {
    * Main render
    */
   render() {
-    const { columns, data, height, selectedNodeId } = this.props;
-
-    const deviceName = (data[selectedNodeId] || {}).name || "All Devices";
-    const deviceType = (data[selectedNodeId] || {}).type || "Device";
+    const { columns, data, deviceName, deviceType, height } = this.props;
 
     const rows = data
       .filter(a => a.value > 0)
@@ -56,11 +56,7 @@ export default class NetworkSummary extends React.Component {
                     </Table.Cell>
                   );
                 default:
-                  return (
-                    <Table.Cell fixed key={`${idx}-${i}`}>
-                      {node[c.data] || "(unknown)"}
-                    </Table.Cell>
-                  );
+                  return <Table.Cell key={`${idx}-${i}`}>{node[c.data] || "(unknown)"}</Table.Cell>;
               }
             })}
           </Table.Row>
