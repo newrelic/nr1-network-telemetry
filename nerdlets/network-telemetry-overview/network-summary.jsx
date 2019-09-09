@@ -56,7 +56,11 @@ export default class NetworkSummary extends React.Component {
                     </Table.Cell>
                   );
                 default:
-                  return <Table.Cell key={`${idx}-${i}`}>{node[c.data] || "(unknown)"}</Table.Cell>;
+                  return (
+                    <Table.Cell key={`${idx}-${i}`}>
+                      {node[c.data] !== null ? node[c.data] : "(unknown)"}
+                    </Table.Cell>
+                  );
               }
             })}
           </Table.Row>

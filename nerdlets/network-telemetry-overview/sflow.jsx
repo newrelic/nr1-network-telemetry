@@ -18,6 +18,7 @@ export default class Sflow extends React.Component {
     account: PropTypes.object.isRequired,
     configRenderer: PropTypes.func,
     height: PropTypes.number,
+    hideLabels: PropTypes.bool,
     launcherUrlState: PropTypes.object,
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
@@ -26,6 +27,7 @@ export default class Sflow extends React.Component {
   };
 
   static defaultProps = {
+    hideLabels: false,
     height: 650,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
@@ -174,8 +176,8 @@ export default class Sflow extends React.Component {
   }
 
   render() {
+    const { hideLabels, height, width } = this.props;
     const { isLoading, nodes, links, queryAttribute, selectedNodeId } = this.state;
-    const { height, width } = this.props;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
@@ -205,10 +207,18 @@ export default class Sflow extends React.Component {
         selectedNodeId < 0 ? true : l.source === selectedNodeId || l.target === selectedNodeId
       )
       .map(l => {
-        return { ...l, source: nodes[l.source].name, target: nodes[l.target].name };
+        const source = hideLabels ? l.source : nodes[l.source].name;
+        const target = hideLabels ? l.target : nodes[l.target].name;
+
+        return { ...l, source, target };
       });
 
-    const deviceName = selectedNodeId >= 0 ? (nodes[selectedNodeId] || {}).name : null;
+    const deviceName =
+      selectedNodeId >= 0
+        ? hideLabels
+          ? `${selectedNodeId}`
+          : (nodes[selectedNodeId] || {}).name
+        : null;
 
     return (
       <div className='background'>
@@ -231,7 +241,7 @@ export default class Sflow extends React.Component {
                     <ChordDiagram
                       componentId={1}
                       groupColors={nodes.map(n => n.color)}
-                      groupLabels={nodes.map(n => n.name)}
+                      groupLabels={nodes.map((n, idx) => (hideLabels ? idx : n.name))}
                       groupOnClick={this.handleChartGroupClick}
                       height={height}
                       innerRadius={innerRadius}
