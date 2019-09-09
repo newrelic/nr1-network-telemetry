@@ -1,5 +1,7 @@
 import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import {
+  BLURRED_LINK_OPACITY,
+  FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
@@ -41,7 +43,7 @@ export default class Sflow extends React.Component {
       links: [],
       nodes: [],
       queryAttribute: "throughput",
-      selectedNodeId: -1,
+      selectedSourceId: -1,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -142,10 +144,10 @@ export default class Sflow extends React.Component {
   }
 
   handleChartGroupClick(id) {
-    const { selectedNodeId } = this.state;
+    const { selectedSourceId } = this.state;
 
-    if (id === selectedNodeId) this.setState({ selectedNodeId: -1 });
-    else this.setState({ selectedNodeId: id });
+    if (id === selectedSourceId || id === null) this.setState({ selectedSourceId: -1 });
+    else this.setState({ selectedSourceId: id });
   }
 
   renderSubMenu() {
@@ -177,7 +179,7 @@ export default class Sflow extends React.Component {
 
   render() {
     const { hideLabels, height, width } = this.props;
-    const { isLoading, nodes, links, queryAttribute, selectedNodeId } = this.state;
+    const { isLoading, nodes, links, queryAttribute, selectedSourceId } = this.state;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
@@ -204,7 +206,7 @@ export default class Sflow extends React.Component {
 
     const summaryData = links
       .filter(l =>
-        selectedNodeId < 0 ? true : l.source === selectedNodeId || l.target === selectedNodeId
+        selectedSourceId < 0 ? true : l.source === selectedSourceId || l.target === selectedSourceId
       )
       .map(l => {
         const source = hideLabels ? l.source : nodes[l.source].name;
@@ -214,10 +216,10 @@ export default class Sflow extends React.Component {
       });
 
     const deviceName =
-      selectedNodeId >= 0
+      selectedSourceId >= 0
         ? hideLabels
-          ? `${selectedNodeId}`
-          : (nodes[selectedNodeId] || {}).name
+          ? `${selectedSourceId}`
+          : (nodes[selectedSourceId] || {}).name
         : null;
 
     return (
@@ -239,6 +241,7 @@ export default class Sflow extends React.Component {
                     <div>No results found</div>
                   ) : (
                     <ChordDiagram
+                      blurOnHover={true}
                       componentId={1}
                       groupColors={nodes.map(n => n.color)}
                       groupLabels={nodes.map((n, idx) => (hideLabels ? idx : n.name))}
@@ -246,7 +249,13 @@ export default class Sflow extends React.Component {
                       height={height}
                       innerRadius={innerRadius}
                       matrix={matrix}
+                      disableRibbonHover={false}
                       outerRadius={outerRadius}
+                      persistHoverOnClick={true}
+                      ribbonBlurOpacity={`${BLURRED_LINK_OPACITY}`}
+                      ribbonOnClick={this.handleChartGroupClick}
+                      ribbonOpacity={`${FOCUSED_LINK_OPACITY}`}
+                      strokeWidth={0}
                       width={width}
                     />
                   )}
