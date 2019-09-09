@@ -9,8 +9,10 @@ export default class NetworkSummary extends React.Component {
   static propTypes = {
     columns: PropTypes.array,
     data: PropTypes.array,
+    deviceName: PropTypes.string,
+    deviceType: PropTypes.string,
     height: PropTypes.number,
-    selectedNodeId: PropTypes.number,
+    hideLabels: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -20,7 +22,10 @@ export default class NetworkSummary extends React.Component {
       { align: "right", data: "value", label: "Throughput" },
     ],
     data: [],
+    deviceName: "All Devices",
+    deviceType: "Device",
     height: "100%",
+    hideLabels: false,
     selectedNodeId: null,
   };
 
@@ -28,10 +33,7 @@ export default class NetworkSummary extends React.Component {
    * Main render
    */
   render() {
-    const { columns, data, height, selectedNodeId } = this.props;
-
-    const deviceName = (data[selectedNodeId] || {}).name || "All Devices";
-    const deviceType = (data[selectedNodeId] || {}).type || "Device";
+    const { columns, data, deviceName, deviceType, height, hideLabels } = this.props;
 
     const rows = data
       .filter(a => a.value > 0)
@@ -51,14 +53,14 @@ export default class NetworkSummary extends React.Component {
                   return (
                     <Table.Cell collapsing key={`${idx}-${i}`} textAlign='right'>
                       {c.type && c.type === "count"
-                        ? intToSize(node.value)
-                        : bitsToSize(node.value)}
+                        ? intToSize(node.value, hideLabels)
+                        : bitsToSize(node.value, hideLabels)}
                     </Table.Cell>
                   );
                 default:
                   return (
-                    <Table.Cell fixed key={`${idx}-${i}`}>
-                      {node[c.data] || "(unknown)"}
+                    <Table.Cell key={`${idx}-${i}`}>
+                      {node[c.data] !== null ? node[c.data] : "(unknown)"}
                     </Table.Cell>
                   );
               }

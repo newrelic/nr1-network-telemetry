@@ -1,4 +1,4 @@
-import { BlockText, Grid, GridItem, Spinner, nerdlet } from "nr1";
+import { BlockText, Checkbox, Grid, GridItem, Spinner, nerdlet } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
@@ -45,6 +45,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     this.handleDataSourceChange = this.handleDataSourceChange.bind(this);
     this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
+    this.handleHideLabelsChange = this.handleHideLabelsChange.bind(this);
   }
 
   /*
@@ -77,6 +78,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }
 
+  handleHideLabelsChange(evt) {
+    const hideLabels = ((evt || {}).target || {}).checked || false;
+
+    nerdlet.setUrlState({ hideLabels });
+  }
+
   accountFilter(account) {
     return DATA_SOURCES.reduce((found, source) => {
       return found || account.reportingEventTypes.includes(source.eventType);
@@ -89,6 +96,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   renderMainMenu() {
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
     const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
+    const hideLabels = this.props.nerdletUrlState.hideLabels || false;
     const { intervalSlider } = this.state;
 
     return (
@@ -118,6 +126,15 @@ export default class NetworkTelemetryNerdlet extends React.Component {
             </div>
           ))}
         </RadioGroup>
+        <br />
+        <BlockText type={BlockText.TYPE.NORMAL}>
+          <Checkbox
+            checked={hideLabels}
+            className={"checkbox"}
+            onChange={this.handleHideLabelsChange}
+          />
+          <strong>Hide Labels</strong>
+        </BlockText>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Limit results to about...</strong>
@@ -167,6 +184,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   render() {
     const { timeRange } = this.props.launcherUrlState;
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
+    const hideLabels = this.props.nerdletUrlState.hideLabels || false;
     const { intervalSeconds, queryLimit } = this.props.nerdletUrlState;
     const { account, isLoading } = this.state;
 
@@ -183,6 +201,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
               ) : (
                 <DsComponent
                   account={account}
+                  hideLabels={hideLabels}
                   intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
                   queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
                   timeRange={timeRange}

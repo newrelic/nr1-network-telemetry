@@ -1,4 +1,4 @@
-import { ChartGroup, HeadingText, LineChart } from "nr1";
+import { ChartGroup, HeadingText, LineChart, SparklineChart } from "nr1";
 
 import { NRQL_IPFIX_WHERE } from "./constants";
 import PropTypes from "prop-types";
@@ -9,6 +9,7 @@ export default class IpfixDetail extends React.Component {
   static propTypes = {
     accountId: PropTypes.number.isRequired,
     filter: PropTypes.string,
+    hideLabels: PropTypes.bool,
     name: PropTypes.string,
   };
 
@@ -16,7 +17,12 @@ export default class IpfixDetail extends React.Component {
    * Main render
    */
   render() {
-    const { accountId, filter, name } = this.props;
+    const { accountId, filter, hideLabels, name } = this.props;
+
+    const displayName = hideLabels ? "(redacted)" : name;
+
+    // Kill facets when labels are hidden
+    const ChartComponent = hideLabels ? SparklineChart : LineChart;
 
     const throughputQuery =
       "FROM ipfix" +
@@ -48,17 +54,23 @@ export default class IpfixDetail extends React.Component {
     return (
       <div className='modal'>
         <ChartGroup>
-          {renderDeviceHeader(name, "Network Entity")}
+          {renderDeviceHeader(displayName, "Network Entity")}
           <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
-          <LineChart
+          <ChartComponent
             accountId={accountId || null}
             className='side-info-chart'
             query={throughputQuery}
           />
+
           <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
-          <LineChart accountId={accountId || null} className='side-info-chart' query={destQuery} />
+          <ChartComponent
+            accountId={accountId || null}
+            className='side-info-chart'
+            query={destQuery}
+          />
+
           <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
-          <LineChart
+          <ChartComponent
             accountId={accountId || null}
             className='side-info-chart'
             query={protocolQuery}

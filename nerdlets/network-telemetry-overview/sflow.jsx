@@ -1,9 +1,11 @@
-import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import {
+  BLURRED_LINK_OPACITY,
+  FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
+import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
 
 import ChordDiagram from "react-chord-diagram";
@@ -18,6 +20,7 @@ export default class Sflow extends React.Component {
     account: PropTypes.object.isRequired,
     configRenderer: PropTypes.func,
     height: PropTypes.number,
+    hideLabels: PropTypes.bool,
     launcherUrlState: PropTypes.object,
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
@@ -27,6 +30,7 @@ export default class Sflow extends React.Component {
 
   static defaultProps = {
     height: 650,
+    hideLabels: false,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
   };
@@ -39,7 +43,7 @@ export default class Sflow extends React.Component {
       links: [],
       nodes: [],
       queryAttribute: "throughput",
-      selectedNodeId: -1,
+      selectedSourceId: -1,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -140,10 +144,10 @@ export default class Sflow extends React.Component {
   }
 
   handleChartGroupClick(id) {
-    const { selectedNodeId } = this.state;
+    const { selectedSourceId } = this.state;
 
-    if (id === selectedNodeId) this.setState({ selectedNodeId: -1 });
-    else this.setState({ selectedNodeId: id });
+    if (id === selectedSourceId || id === null) this.setState({ selectedSourceId: -1 });
+    else this.setState({ selectedSourceId: id });
   }
 
   renderSubMenu() {
@@ -174,8 +178,8 @@ export default class Sflow extends React.Component {
   }
 
   render() {
-    const { isLoading, nodes, links, queryAttribute, selectedNodeId } = this.state;
-    const { height, width } = this.props;
+    const { hideLabels, height, width } = this.props;
+    const { isLoading, nodes, links, queryAttribute, selectedSourceId } = this.state;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
@@ -202,11 +206,21 @@ export default class Sflow extends React.Component {
 
     const summaryData = links
       .filter(l =>
-        selectedNodeId < 0 ? true : l.source === selectedNodeId || l.target === selectedNodeId
+        selectedSourceId < 0 ? true : l.source === selectedSourceId || l.target === selectedSourceId
       )
       .map(l => {
-        return { ...l, source: nodes[l.source].name, target: nodes[l.target].name };
+        const source = hideLabels ? l.source : nodes[l.source].name;
+        const target = hideLabels ? l.target : nodes[l.target].name;
+
+        return { ...l, source, target };
       });
+
+    const deviceName =
+      selectedSourceId >= 0
+        ? hideLabels
+          ? `${selectedSourceId}`
+          : (nodes[selectedSourceId] || {}).name
+        : null;
 
     return (
       <div className='background'>
@@ -227,14 +241,21 @@ export default class Sflow extends React.Component {
                     <div>No results found</div>
                   ) : (
                     <ChordDiagram
+                      blurOnHover={true}
                       componentId={1}
+                      disableRibbonHover={false}
                       groupColors={nodes.map(n => n.color)}
-                      groupLabels={nodes.map(n => n.name)}
+                      groupLabels={nodes.map((n, idx) => (hideLabels ? idx : n.name))}
                       groupOnClick={this.handleChartGroupClick}
                       height={height}
                       innerRadius={innerRadius}
                       matrix={matrix}
                       outerRadius={outerRadius}
+                      persistHoverOnClick={true}
+                      ribbonBlurOpacity={`${BLURRED_LINK_OPACITY}`}
+                      ribbonOnClick={this.handleChartGroupClick}
+                      ribbonOpacity={`${FOCUSED_LINK_OPACITY}`}
+                      strokeWidth={0}
                       width={width}
                     />
                   )}
@@ -243,7 +264,13 @@ export default class Sflow extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary columns={summaryColumns} data={summaryData} height={height} />
+            <NetworkSummary
+              columns={summaryColumns}
+              data={summaryData}
+              deviceName={deviceName}
+              height={height}
+              hideLabels={hideLabels}
+            />
           </GridItem>
         </Grid>
       </div>

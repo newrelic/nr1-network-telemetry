@@ -21,6 +21,7 @@ export default class Ipfix extends React.Component {
   static propTypes = {
     account: PropTypes.object.isRequired,
     height: PropTypes.number,
+    hideLabels: PropTypes.bool,
     intervalSeconds: PropTypes.number,
     queryLimit: PropTypes.number,
     width: PropTypes.number,
@@ -28,6 +29,7 @@ export default class Ipfix extends React.Component {
 
   static defaultProps = {
     height: 650,
+    hideLabels: false,
     intervalSeconds: INTERVAL_SECONDS_DEFAULT,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
@@ -157,6 +159,7 @@ export default class Ipfix extends React.Component {
    */
   renderDetailCard() {
     const account = this.props.account || {};
+    const { hideLabels } = this.props;
     const { detailData, detailHidden, nodes, peerBy } = this.state;
 
     if (!account || !detailData || detailHidden) return;
@@ -176,7 +179,12 @@ export default class Ipfix extends React.Component {
 
     return (
       <Modal hidden={detailHidden} onClose={this.handleDetailClose}>
-        <IpfixDetail accountId={account.id} filter={filter} name={peerName} />
+        <IpfixDetail
+          accountId={account.id}
+          filter={filter}
+          hideLabels={hideLabels}
+          name={peerName}
+        />
       </Modal>
     );
   }
@@ -214,7 +222,7 @@ export default class Ipfix extends React.Component {
    * Main render
    */
   render() {
-    const { height, width } = this.props;
+    const { height, hideLabels, width } = this.props;
     const { activeLink, links, nodes, isLoading } = this.state;
 
     // Add link highlighting
@@ -242,6 +250,8 @@ export default class Ipfix extends React.Component {
 
       return { ...link, opacity };
     });
+
+    const renderNodes = hideLabels ? nodes.map((n, idx) => ({ ...n, name: `${idx}` })) : nodes;
 
     return (
       <div className='background'>
@@ -277,7 +287,7 @@ export default class Ipfix extends React.Component {
                       <Sankey
                         height={height}
                         links={renderLinks}
-                        nodes={nodes}
+                        nodes={renderNodes}
                         onLinkClick={this.handleSankeyLinkClick}
                         onLinkMouseOut={() => this.setState({ activeLink: null })}
                         onLinkMouseOver={node => this.setState({ activeLink: node })}
@@ -290,7 +300,13 @@ export default class Ipfix extends React.Component {
             </Stack>
           </GridItem>
           <GridItem columnSpan={4}>
-            <NetworkSummary data={nodes} height={height} />
+            <NetworkSummary
+              data={renderNodes}
+              deviceName={"All Peers"}
+              deviceType={"Network entity"}
+              height={height}
+              hideLabels={hideLabels}
+            />
           </GridItem>
         </Grid>
       </div>
