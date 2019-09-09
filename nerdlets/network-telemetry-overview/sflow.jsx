@@ -260,6 +260,7 @@ export default class Sflow extends React.Component {
               data={summaryData}
               deviceName={deviceName}
               height={height}
+              hideLabels={hideLabels}
             />
           </GridItem>
         </Grid>

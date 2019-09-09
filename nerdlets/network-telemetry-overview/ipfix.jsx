@@ -159,6 +159,7 @@ export default class Ipfix extends React.Component {
    */
   renderDetailCard() {
     const account = this.props.account || {};
+    const { hideLabels } = this.props;
     const { detailData, detailHidden, nodes, peerBy } = this.state;
 
     if (!account || !detailData || detailHidden) return;
@@ -178,7 +179,12 @@ export default class Ipfix extends React.Component {
 
     return (
       <Modal hidden={detailHidden} onClose={this.handleDetailClose}>
-        <IpfixDetail accountId={account.id} filter={filter} name={peerName} />
+        <IpfixDetail
+          accountId={account.id}
+          hideLabels={hideLabels}
+          filter={filter}
+          name={peerName}
+        />
       </Modal>
     );
   }
@@ -245,7 +251,7 @@ export default class Ipfix extends React.Component {
       return { ...link, opacity };
     });
 
-    const renderNodes = hideLabels ? nodes.map((n, idx) => ({ ...n, name: idx })) : nodes;
+    const renderNodes = hideLabels ? nodes.map((n, idx) => ({ ...n, name: `${idx}` })) : nodes;
     console.log(renderNodes);
 
     return (
@@ -300,6 +306,7 @@ export default class Ipfix extends React.Component {
               deviceName={"All Peers"}
               deviceType={"Network entity"}
               height={height}
+              hideLabels={hideLabels}
             />
           </GridItem>
         </Grid>

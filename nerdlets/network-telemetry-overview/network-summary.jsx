@@ -12,6 +12,7 @@ export default class NetworkSummary extends React.Component {
     deviceName: PropTypes.string,
     deviceType: PropTypes.string,
     height: PropTypes.number,
+    hideLabels: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -24,6 +25,7 @@ export default class NetworkSummary extends React.Component {
     deviceName: "All Devices",
     deviceType: "Device",
     height: "100%",
+    hideLabels: false,
     selectedNodeId: null,
   };
 
@@ -31,7 +33,7 @@ export default class NetworkSummary extends React.Component {
    * Main render
    */
   render() {
-    const { columns, data, deviceName, deviceType, height } = this.props;
+    const { columns, data, deviceName, deviceType, height, hideLabels } = this.props;
 
     const rows = data
       .filter(a => a.value > 0)
@@ -51,8 +53,8 @@ export default class NetworkSummary extends React.Component {
                   return (
                     <Table.Cell collapsing key={`${idx}-${i}`} textAlign='right'>
                       {c.type && c.type === "count"
-                        ? intToSize(node.value)
-                        : bitsToSize(node.value)}
+                        ? intToSize(node.value, hideLabels)
+                        : bitsToSize(node.value, hideLabels)}
                     </Table.Cell>
                   );
                 default:
