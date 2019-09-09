@@ -201,9 +201,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
               ) : (
                 <DsComponent
                   account={account}
+                  hideLabels={hideLabels}
                   intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
                   queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
-                  hideLabels={hideLabels}
                   timeRange={timeRange}
                 />
               )}

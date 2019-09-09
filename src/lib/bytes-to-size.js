@@ -2,7 +2,6 @@
  * Convert bytes to human readable bytes
  */
 export const bytesToSize = (bytes, hideUnit) => {
-  const hide = hideUnit || false;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   if (bytes === 0) return `0 ${!hideUnit ? "B" : ""}`;
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
@@ -11,7 +10,6 @@ export const bytesToSize = (bytes, hideUnit) => {
 };
 
 export const bitsToSize = (bits, hideUnit) => {
-  const hide = hideUnit || false;
   const sizes = ["b", "Kb", "Mb", "Gb", "Tb"];
   if (bits === 0) return `0 ${!hideUnit ? "b" : ""}`;
   const i = parseInt(Math.floor(Math.log(bits) / Math.log(1024)), 10);

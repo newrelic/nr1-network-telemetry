@@ -1,4 +1,3 @@
-import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import {
   BLURRED_LINK_OPACITY,
   FOCUSED_LINK_OPACITY,
@@ -6,6 +5,7 @@ import {
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
 } from "./constants";
+import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
 
 import ChordDiagram from "react-chord-diagram";
@@ -29,8 +29,8 @@ export default class Sflow extends React.Component {
   };
 
   static defaultProps = {
-    hideLabels: false,
     height: 650,
+    hideLabels: false,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
     width: 700,
   };
@@ -243,13 +243,13 @@ export default class Sflow extends React.Component {
                     <ChordDiagram
                       blurOnHover={true}
                       componentId={1}
+                      disableRibbonHover={false}
                       groupColors={nodes.map(n => n.color)}
                       groupLabels={nodes.map((n, idx) => (hideLabels ? idx : n.name))}
                       groupOnClick={this.handleChartGroupClick}
                       height={height}
                       innerRadius={innerRadius}
                       matrix={matrix}
-                      disableRibbonHover={false}
                       outerRadius={outerRadius}
                       persistHoverOnClick={true}
                       ribbonBlurOpacity={`${BLURRED_LINK_OPACITY}`}

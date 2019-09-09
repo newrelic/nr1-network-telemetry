@@ -181,8 +181,8 @@ export default class Ipfix extends React.Component {
       <Modal hidden={detailHidden} onClose={this.handleDetailClose}>
         <IpfixDetail
           accountId={account.id}
-          hideLabels={hideLabels}
           filter={filter}
+          hideLabels={hideLabels}
           name={peerName}
         />
       </Modal>
@@ -252,7 +252,6 @@ export default class Ipfix extends React.Component {
     });
 
     const renderNodes = hideLabels ? nodes.map((n, idx) => ({ ...n, name: `${idx}` })) : nodes;
-    console.log(renderNodes);
 
     return (
       <div className='background'>
