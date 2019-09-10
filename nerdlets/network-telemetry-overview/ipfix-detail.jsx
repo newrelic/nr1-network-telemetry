@@ -1,6 +1,5 @@
 import { ChartGroup, HeadingText, LineChart, SparklineChart } from "nr1";
 
-import { NRQL_IPFIX_WHERE } from "./constants";
 import PropTypes from "prop-types";
 import React from "react";
 import { renderDeviceHeader } from "./common";
@@ -27,14 +26,12 @@ export default class IpfixDetail extends React.Component {
     const throughputQuery =
       "FROM ipfix" +
       " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
-      NRQL_IPFIX_WHERE +
       (filter || "") +
       " TIMESERIES";
 
     const destQuery =
       "FROM ipfix" +
       " SELECT sum(octetDeltaCount * 64000) as 'throughput'" +
-      NRQL_IPFIX_WHERE +
       (filter || "") +
       " FACET destinationIPv4Address " +
       " TIMESERIES";
@@ -42,7 +39,6 @@ export default class IpfixDetail extends React.Component {
     const protocolQuery =
       "FROM ipfix" +
       " SELECT count(*) as 'flows'" +
-      NRQL_IPFIX_WHERE +
       (filter || "") +
       " FACET cases(" +
       "   WHERE protocolIdentifier = 1 as 'ICMP', " +
