@@ -3,11 +3,12 @@ import {
   FOCUSED_LINK_OPACITY,
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MIN,
-  NRQL_IPFIX_WHERE,
+  NRQL_IPFIX_WHERE_NO_PRIVATE_ASN,
   NRQL_QUERY_LIMIT_DEFAULT,
+  SUB_MENU_HEIGHT,
 } from "./constants";
 
-import { BlockText, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
+import { BlockText, Checkbox, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
 
 import IpfixDetail from "./ipfix-detail";
@@ -38,17 +39,23 @@ export default class Ipfix extends React.Component {
   constructor(props) {
     super(props);
 
+    const { height, width } = this.props;
+
     this.state = {
       activeLink: null,
       detailData: null,
       detailHidden: true,
+      filterPrivateAsns: true,
+      height: height - 2 * SUB_MENU_HEIGHT,
       isLoading: true,
       links: [],
       nodes: [],
       peerBy: "peerName",
+      width: width,
     };
 
     this.handleDetailClose = this.handleDetailClose.bind(this);
+    this.handleFilterPrivateAsnsChange = this.handleFilterPrivateAsnsChange.bind(this);
     this.handlePeerByChange = this.handlePeerByChange.bind(this);
     this.handleSankeyLinkClick = this.handleSankeyLinkClick.bind(this);
   }
@@ -68,6 +75,11 @@ export default class Ipfix extends React.Component {
       peerBy !== prevState.peerBy
     ) {
       this.resetTimer();
+    }
+
+    if (this.graphContainer && this.graphContainer.clientWidth !== prevState.width) {
+      const width = this.graphContainer.clientWidth;
+      this.setState({ width });
     }
   }
 
@@ -116,18 +128,24 @@ export default class Ipfix extends React.Component {
     if (peerBy) {
       await this.setState({ peerBy });
       this.fetchIpfixData();
-      // this.resetTimer();
     }
+  }
+
+  async handleFilterPrivateAsnsChange(evt) {
+    const filterPrivateAsns = ((evt || {}).target || {}).checked;
+
+    await this.setState({ filterPrivateAsns });
+    this.fetchIpfixData();
   }
 
   createNrqlQuery() {
     const { intervalSeconds, queryLimit } = this.props;
-    const { peerBy } = this.state;
+    const { filterPrivateAsns, peerBy } = this.state;
 
     return (
       "FROM ipfix" +
       " SELECT sum(octetDeltaCount * 64000) as 'value'" +
-      NRQL_IPFIX_WHERE +
+      (filterPrivateAsns ? NRQL_IPFIX_WHERE_NO_PRIVATE_ASN : "") +
       " FACET " +
       peerBy +
       ", agent, destinationIPv4Address" +
@@ -160,12 +178,13 @@ export default class Ipfix extends React.Component {
   renderDetailCard() {
     const account = this.props.account || {};
     const { hideLabels } = this.props;
-    const { detailData, detailHidden, nodes, peerBy } = this.state;
+    const { detailData, detailHidden, filterPrivateAsns, nodes, peerBy } = this.state;
 
     if (!account || !detailData || detailHidden) return;
 
     let peerName = (nodes[detailData.sourceId] || {}).name || "";
-    let filter = " AND " + peerBy + " = ";
+    let filter =
+      (filterPrivateAsns ? `${NRQL_IPFIX_WHERE_NO_PRIVATE_ASN} AND ` : "WHERE ") + peerBy + " = ";
     if (peerBy === "bgpSourceAsNumber") {
       filter += peerName;
     } else {
@@ -190,30 +209,39 @@ export default class Ipfix extends React.Component {
   }
 
   renderSubMenu() {
-    const { peerBy } = this.state;
+    const { filterPrivateAsns, peerBy } = this.state;
 
     return (
       <div className='top-menu'>
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Show peers by...</strong>
-        </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='peerBy'
-          onChange={this.handlePeerByChange}
-          selectedValue={peerBy}
-        >
-          <label htmlFor={"peerName"}>
-            <Radio value='peerName' />
-            Peer Name
-          </label>
-          <label htmlFor={"bgpSourceAsNumber"}>
-            <Radio value='bgpSourceAsNumber' />
-            AS Number
-          </label>
-        </RadioGroup>
+        <div>
+          <BlockText type={BlockText.TYPE.NORMAL}>
+            <strong>Show peers by...</strong>
+          </BlockText>
+          <RadioGroup
+            className='radio-group'
+            name='peerBy'
+            onChange={this.handlePeerByChange}
+            selectedValue={peerBy}
+          >
+            <label htmlFor={"peerName"}>
+              <Radio value='peerName' />
+              Peer Name
+            </label>
+            <label htmlFor={"bgpSourceAsNumber"}>
+              <Radio value='bgpSourceAsNumber' />
+              AS Number
+            </label>
+          </RadioGroup>
+        </div>
 
-        <div className='refresh-controls'></div>
+        <div>
+          <Checkbox
+            checked={filterPrivateAsns}
+            className='checkbox'
+            label='Filter Private ASNs'
+            onChange={this.handleFilterPrivateAsnsChange}
+          />
+        </div>
       </div>
     );
   }
@@ -222,8 +250,8 @@ export default class Ipfix extends React.Component {
    * Main render
    */
   render() {
-    const { height, hideLabels, width } = this.props;
-    const { activeLink, links, nodes, isLoading } = this.state;
+    const { hideLabels } = this.props;
+    const { activeLink, height, links, nodes, isLoading, width } = this.state;
 
     // Add link highlighting
     const renderLinks = links.map((link, linkIndex) => {
@@ -263,25 +291,33 @@ export default class Ipfix extends React.Component {
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
             >
               <StackItem>
-                <div className='sub-menu'>{this.renderSubMenu()}</div>
+                <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
+                  {this.renderSubMenu()}
+                </div>
               </StackItem>
               <StackItem>
-                <div className='main-container'>
+                <div
+                  className='main-container'
+                  ref={graphContainer => {
+                    this.graphContainer = graphContainer;
+                  }}
+                  style={{ margin: "5px" }}
+                >
                   {isLoading ? (
                     <Spinner fillContainer />
                   ) : nodes.length < 1 ? (
                     <div>No results found</div>
                   ) : (
-                    <div>
-                      <div style={{ display: "flex", marginTop: "5px", width: "100%" }}>
+                    <div style={{ margin: "5px" }}>
+                      <div style={{ display: "flex", margin: "5px" }}>
                         <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
-                          Peer
+                          Source
                         </div>
                         <div style={{ fontWeight: "600", textAlign: "center", width: "34%" }}>
                           Router
                         </div>
                         <div style={{ fontWeight: "600", textAlign: "right", width: "33%" }}>
-                          Destination IP
+                          Destination
                         </div>
                       </div>
                       <Sankey

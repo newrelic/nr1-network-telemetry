@@ -1,6 +1,8 @@
 /*
  * Constants
  */
+export const SUB_MENU_HEIGHT = 45;
+
 export const INTERVAL_SECONDS_MIN = 3;
 export const INTERVAL_SECONDS_MAX = 60;
 export const INTERVAL_SECONDS_DEFAULT = 30;
@@ -39,7 +41,7 @@ export const NRQL_QUERY_LIMIT_DEFAULT = 50;
 export const NRQL_QUERY_LIMIT_MIN = 1;
 export const NRQL_QUERY_LIMIT_MAX = 100;
 
-export const NRQL_IPFIX_WHERE =
+export const NRQL_IPFIX_WHERE_NO_PRIVATE_ASN =
   " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
   " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +
   " OR (bgpSourceAsNumber > 4294967294)";

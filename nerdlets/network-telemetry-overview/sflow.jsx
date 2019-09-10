@@ -4,6 +4,7 @@ import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
+  SUB_MENU_HEIGHT,
 } from "./constants";
 import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
 import { Radio, RadioGroup } from "react-radio-group";
@@ -38,12 +39,16 @@ export default class Sflow extends React.Component {
   constructor(props) {
     super(props);
 
+    const { height, width } = this.props;
+
     this.state = {
+      height: height - 2 * SUB_MENU_HEIGHT,
       isLoading: true,
       links: [],
       nodes: [],
       queryAttribute: "throughput",
       selectedSourceId: -1,
+      width: width,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -65,6 +70,11 @@ export default class Sflow extends React.Component {
       timeRange !== prevProps.timeRange
     ) {
       this.resetTimer();
+    }
+
+    if (this.graphContainer && this.graphContainer.clientWidth !== prevState.width) {
+      const width = this.graphContainer.clientWidth;
+      this.setState({ width });
     }
   }
 
@@ -178,8 +188,8 @@ export default class Sflow extends React.Component {
   }
 
   render() {
-    const { hideLabels, height, width } = this.props;
-    const { isLoading, nodes, links, queryAttribute, selectedSourceId } = this.state;
+    const { hideLabels } = this.props;
+    const { isLoading, height, nodes, links, queryAttribute, selectedSourceId, width } = this.state;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
@@ -231,10 +241,17 @@ export default class Sflow extends React.Component {
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
             >
               <StackItem>
-                <div className='sub-menu'>{this.renderSubMenu()}</div>
+                <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
+                  {this.renderSubMenu()}
+                </div>
               </StackItem>
               <StackItem>
-                <div className='main-container'>
+                <div
+                  className='main-container'
+                  ref={graphContainer => {
+                    this.graphContainer = graphContainer;
+                  }}
+                >
                   {isLoading ? (
                     <Spinner fillContainer />
                   ) : nodes.length < 1 ? (

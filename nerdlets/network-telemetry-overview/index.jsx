@@ -127,15 +127,16 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           ))}
         </RadioGroup>
         <br />
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <Checkbox
-            checked={hideLabels}
-            className={"checkbox"}
-            onChange={this.handleHideLabelsChange}
-          />
-          <strong>Hide Labels</strong>
-        </BlockText>
+
+        <Checkbox
+          checked={hideLabels}
+          className='checkbox'
+          label='Hide Labels'
+          onChange={this.handleHideLabelsChange}
+        />
         <br />
+        <br />
+
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Limit results to about...</strong>
         </BlockText>
@@ -182,6 +183,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    * Main Renderer
    */
   render() {
+    const { height } = this.props;
     const { timeRange } = this.props.launcherUrlState;
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
     const hideLabels = this.props.nerdletUrlState.hideLabels || false;
@@ -201,6 +203,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
               ) : (
                 <DsComponent
                   account={account}
+                  height={height}
                   hideLabels={hideLabels}
                   intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
                   queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
