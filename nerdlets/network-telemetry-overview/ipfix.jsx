@@ -301,14 +301,13 @@ export default class Ipfix extends React.Component {
                   ref={graphContainer => {
                     this.graphContainer = graphContainer;
                   }}
-                  style={{ margin: "5px" }}
                 >
                   {isLoading ? (
                     <Spinner fillContainer />
                   ) : nodes.length < 1 ? (
                     <div>No results found</div>
                   ) : (
-                    <div style={{ margin: "5px" }}>
+                    <div>
                       <div style={{ display: "flex", margin: "5px" }}>
                         <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
                           Source

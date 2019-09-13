@@ -273,6 +273,9 @@ export default class Sflow extends React.Component {
                       ribbonOnClick={this.handleChartGroupClick}
                       ribbonOpacity={`${FOCUSED_LINK_OPACITY}`}
                       strokeWidth={0}
+                      svgOnClick={() => {
+                        this.handleChartGroupClick(null);
+                      }}
                       width={width}
                     />
                   )}
