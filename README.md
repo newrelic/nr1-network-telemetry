@@ -7,7 +7,17 @@
 nr1-network-telemetry visualizes data collected through the [Network
 Telemetry](https://github.com/newrelic/nri-network-telemetry) Integration.
 
+### IPFIX Visualization
+
+Quickly identify where traffic is coming from and going to across your routing tier.
+
 ![Screenshot #1](screenshots/screenshot_01.png)
+
+### Sflow Visualization
+
+View the top talkers in your network, and who they are communicating with.
+
+![Screenshot #2](screenshots/screenshot_02.png)
 
 ## Open Source License
 
