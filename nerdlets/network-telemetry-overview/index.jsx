@@ -1,4 +1,4 @@
-import { BlockText, Checkbox, Grid, GridItem, Spinner, nerdlet } from "nr1";
+import { BlockText, Checkbox, Grid, GridItem, Radio, RadioGroup, Spinner, nerdlet } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
@@ -7,7 +7,6 @@ import {
   NRQL_QUERY_LIMIT_MAX,
   NRQL_QUERY_LIMIT_MIN,
 } from "./constants";
-import { Radio, RadioGroup } from "react-radio-group";
 
 import { AccountDropdown } from "../../src/components/account-dropdown";
 import InputRange from "react-input-range";
@@ -51,7 +50,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   /*
    * Helper functions
    */
-  handleDataSourceChange(dataSource) {
+  handleDataSourceChange(evt, value) {
+    const dataSource = parseInt(value, 10);
+
     if (dataSource >= 0) {
       nerdlet.setUrlState({ dataSource });
     }
@@ -72,7 +73,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   }, 500);
 
-  handleLimitChange(queryLimit) {
+  handleLimitChange(evt, value) {
+    const queryLimit = parseInt(value, 10);
+
     if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
       nerdlet.setUrlState({ queryLimit });
     }
@@ -113,17 +116,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
         </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='dataSource'
-          onChange={this.handleDataSourceChange}
-          selectedValue={dataSource}
-        >
+        <RadioGroup onChange={this.handleDataSourceChange} value={`${dataSource}`}>
           {DATA_SOURCES.map((v, i) => (
-            <div className='radio-option' key={i}>
-              <Radio value={i} />
-              <label htmlFor={i}>{v.name}</label>
-            </div>
+            <Radio key={i} label={v.name} value={`${i}`} />
           ))}
         </RadioGroup>
         <br />
@@ -140,24 +135,10 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Limit results to about...</strong>
         </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='limit'
-          onChange={this.handleLimitChange}
-          selectedValue={queryLimit}
-        >
-          <div className='radio-option'>
-            <Radio value={25} />
-            <label htmlFor={"25"}>25 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value={50} />
-            <label htmlFor={"50"}>50 devices</label>
-          </div>
-          <div className='radio-option'>
-            <Radio value={100} />
-            <label htmlFor={"100"}>100 devices</label>
-          </div>
+        <RadioGroup onChange={this.handleLimitChange} value={`${queryLimit}`}>
+          <Radio label='25 devices' value='25' />
+          <Radio label='50 devices' value='50' />
+          <Radio label='100 devices' value='100' />
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
