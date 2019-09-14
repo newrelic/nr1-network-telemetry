@@ -6,8 +6,7 @@ import {
   NRQL_QUERY_LIMIT_DEFAULT,
   SUB_MENU_HEIGHT,
 } from "./constants";
-import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
-import { Radio, RadioGroup } from "react-radio-group";
+import { BlockText, Grid, GridItem, Radio, RadioGroup, Spinner, Stack, StackItem } from "nr1";
 
 import ChordDiagram from "react-chord-diagram";
 import NetworkSummary from "./network-summary";
@@ -146,7 +145,7 @@ export default class Sflow extends React.Component {
     );
   }
 
-  handleAttributeChange(attr) {
+  handleAttributeChange(evt, attr) {
     if (attr === "count" || attr === "throughput") {
       this.setState({ queryAttribute: attr });
     }
@@ -164,24 +163,19 @@ export default class Sflow extends React.Component {
 
     return (
       <div className='top-menu'>
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Show devices with...</strong>
-        </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='attribute'
-          onChange={this.handleAttributeChange}
-          selectedValue={queryAttribute}
-        >
-          <label htmlFor={"throughput"}>
-            <Radio value='throughput' />
-            Highest Throughput
-          </label>
-          <label htmlFor={"count"}>
-            <Radio value='count' />
-            Most flows collected
-          </label>
-        </RadioGroup>
+        <div>
+          <BlockText type={BlockText.TYPE.NORMAL}>
+            <strong>Show devices with...</strong>
+          </BlockText>
+          <RadioGroup
+            className='horizontal-radio-group'
+            onChange={this.handleAttributeChange}
+            value={queryAttribute}
+          >
+            <Radio label='Highest Throughput' value='throughput' />
+            <Radio label='Most flows collected' value='count' />
+          </RadioGroup>
+        </div>
       </div>
     );
   }
