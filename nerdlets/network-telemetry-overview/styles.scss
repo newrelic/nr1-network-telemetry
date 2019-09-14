@@ -157,6 +157,13 @@
   }
 }
 
+.horizontal-radio-group {
+  -webkit-box-align: center;
+  align-items: center;
+  display: flex;
+  margin-bottom: 4px;
+}
+
 label {
   color: #000e0e;
   font-size: 12px;

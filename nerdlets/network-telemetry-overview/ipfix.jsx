@@ -8,8 +8,18 @@ import {
   SUB_MENU_HEIGHT,
 } from "./constants";
 
-import { BlockText, Checkbox, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
-import { Radio, RadioGroup } from "react-radio-group";
+import {
+  BlockText,
+  Checkbox,
+  Grid,
+  GridItem,
+  Modal,
+  Radio,
+  RadioGroup,
+  Spinner,
+  Stack,
+  StackItem,
+} from "nr1";
 
 import IpfixDetail from "./ipfix-detail";
 import NetworkSummary from "./network-summary";
@@ -124,7 +134,7 @@ export default class Ipfix extends React.Component {
     this.setState({ detailHidden: true });
   }
 
-  async handlePeerByChange(peerBy) {
+  async handlePeerByChange(evt, peerBy) {
     if (peerBy) {
       await this.setState({ peerBy });
       this.fetchIpfixData();
@@ -218,19 +228,12 @@ export default class Ipfix extends React.Component {
             <strong>Show peers by...</strong>
           </BlockText>
           <RadioGroup
-            className='radio-group'
-            name='peerBy'
+            className='horizontal-radio-group'
             onChange={this.handlePeerByChange}
-            selectedValue={peerBy}
+            value={peerBy}
           >
-            <label htmlFor={"peerName"}>
-              <Radio value='peerName' />
-              Peer Name
-            </label>
-            <label htmlFor={"bgpSourceAsNumber"}>
-              <Radio value='bgpSourceAsNumber' />
-              AS Number
-            </label>
+            <Radio label='Peer Name' value='peerName' />
+            <Radio label='AS Number' value='bgpSourceAsNumber' />
           </RadioGroup>
         </div>
 
