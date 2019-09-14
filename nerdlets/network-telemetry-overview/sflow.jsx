@@ -22,7 +22,6 @@ export default class Sflow extends React.Component {
     configRenderer: PropTypes.func,
     height: PropTypes.number,
     hideLabels: PropTypes.bool,
-    launcherUrlState: PropTypes.object,
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
     timeRange: PropTypes.object.isRequired,
@@ -143,7 +142,7 @@ export default class Sflow extends React.Component {
       " LIMIT " +
       queryLimit +
       " " +
-      timeRangeToNrql(this.props.launcherUrlState)
+      timeRangeToNrql(this.props.timeRange)
     );
   }
 
