@@ -287,7 +287,7 @@ export default class Ipfix extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
-              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
+              horizontalType={Stack.HORIZONTAL_TYPE.FILL}
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
             >
               <StackItem>
