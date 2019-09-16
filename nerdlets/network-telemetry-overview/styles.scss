@@ -139,21 +139,14 @@
   margin-bottom: 10px;
 }
 
-/* Copied from nr1 Radio */
-.radio-group {
-  input[type="radio"] {
-    background-color: #fafbfb;
-    border-radius: 100%;
-    border: 1px solid #b9bdbd;
-    height: 16px;
-    margin-left: 4px;
-    margin-right: 8px;
-    width: 16px;
-  }
+.horizontal-radio-group {
+  -webkit-box-align: center;
+  align-items: center;
+  display: flex;
+  margin-bottom: 4px;
 
-  input[type="radio"]:checked {
-    background-color: #0079bf;
-    border-color: #003555;
+  :not(:last-child) {
+    margin-bottom: 0 !important;
   }
 }
 

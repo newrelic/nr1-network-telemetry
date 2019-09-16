@@ -6,8 +6,7 @@ import {
   NRQL_QUERY_LIMIT_DEFAULT,
   SUB_MENU_HEIGHT,
 } from "./constants";
-import { BlockText, Grid, GridItem, Spinner, Stack, StackItem } from "nr1";
-import { Radio, RadioGroup } from "react-radio-group";
+import { BlockText, Grid, GridItem, Radio, RadioGroup, Spinner, Stack, StackItem } from "nr1";
 
 import ChordDiagram from "react-chord-diagram";
 import NetworkSummary from "./network-summary";
@@ -22,7 +21,6 @@ export default class Sflow extends React.Component {
     configRenderer: PropTypes.func,
     height: PropTypes.number,
     hideLabels: PropTypes.bool,
-    launcherUrlState: PropTypes.object,
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
     timeRange: PropTypes.object.isRequired,
@@ -42,7 +40,7 @@ export default class Sflow extends React.Component {
     const { height, width } = this.props;
 
     this.state = {
-      height: height - 2 * SUB_MENU_HEIGHT,
+      height: height - SUB_MENU_HEIGHT - 10,
       isLoading: true,
       links: [],
       nodes: [],
@@ -143,11 +141,11 @@ export default class Sflow extends React.Component {
       " LIMIT " +
       queryLimit +
       " " +
-      timeRangeToNrql(this.props.launcherUrlState)
+      timeRangeToNrql(this.props.timeRange)
     );
   }
 
-  handleAttributeChange(attr) {
+  handleAttributeChange(evt, attr) {
     if (attr === "count" || attr === "throughput") {
       this.setState({ queryAttribute: attr });
     }
@@ -165,24 +163,19 @@ export default class Sflow extends React.Component {
 
     return (
       <div className='top-menu'>
-        <BlockText type={BlockText.TYPE.NORMAL}>
-          <strong>Show devices with...</strong>
-        </BlockText>
-        <RadioGroup
-          className='radio-group'
-          name='attribute'
-          onChange={this.handleAttributeChange}
-          selectedValue={queryAttribute}
-        >
-          <label htmlFor={"throughput"}>
-            <Radio value='throughput' />
-            Highest Throughput
-          </label>
-          <label htmlFor={"count"}>
-            <Radio value='count' />
-            Most flows collected
-          </label>
-        </RadioGroup>
+        <div>
+          <BlockText type={BlockText.TYPE.NORMAL}>
+            <strong>Show devices with...</strong>
+          </BlockText>
+          <RadioGroup
+            className='horizontal-radio-group'
+            onChange={this.handleAttributeChange}
+            value={queryAttribute}
+          >
+            <Radio label='Highest Throughput' value='throughput' />
+            <Radio label='Most flows collected' value='count' />
+          </RadioGroup>
+        </div>
       </div>
     );
   }
@@ -237,8 +230,10 @@ export default class Sflow extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
-              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
+              fullHeight={true}
+              fullWidth={true}
+              horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
                 <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>

@@ -8,8 +8,18 @@ import {
   SUB_MENU_HEIGHT,
 } from "./constants";
 
-import { BlockText, Checkbox, Grid, GridItem, Modal, Spinner, Stack, StackItem } from "nr1";
-import { Radio, RadioGroup } from "react-radio-group";
+import {
+  BlockText,
+  Checkbox,
+  Grid,
+  GridItem,
+  Modal,
+  Radio,
+  RadioGroup,
+  Spinner,
+  Stack,
+  StackItem,
+} from "nr1";
 
 import IpfixDetail from "./ipfix-detail";
 import NetworkSummary from "./network-summary";
@@ -46,7 +56,7 @@ export default class Ipfix extends React.Component {
       detailData: null,
       detailHidden: true,
       filterPrivateAsns: true,
-      height: height - 2 * SUB_MENU_HEIGHT,
+      height: height - SUB_MENU_HEIGHT - 10,
       isLoading: true,
       links: [],
       nodes: [],
@@ -124,7 +134,7 @@ export default class Ipfix extends React.Component {
     this.setState({ detailHidden: true });
   }
 
-  async handlePeerByChange(peerBy) {
+  async handlePeerByChange(evt, peerBy) {
     if (peerBy) {
       await this.setState({ peerBy });
       this.fetchIpfixData();
@@ -218,19 +228,12 @@ export default class Ipfix extends React.Component {
             <strong>Show peers by...</strong>
           </BlockText>
           <RadioGroup
-            className='radio-group'
-            name='peerBy'
+            className='horizontal-radio-group'
             onChange={this.handlePeerByChange}
-            selectedValue={peerBy}
+            value={peerBy}
           >
-            <label htmlFor={"peerName"}>
-              <Radio value='peerName' />
-              Peer Name
-            </label>
-            <label htmlFor={"bgpSourceAsNumber"}>
-              <Radio value='bgpSourceAsNumber' />
-              AS Number
-            </label>
+            <Radio label='Peer Name' value='peerName' />
+            <Radio label='AS Number' value='bgpSourceAsNumber' />
           </RadioGroup>
         </div>
 
@@ -287,8 +290,10 @@ export default class Ipfix extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
-              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
+              fullHeight={true}
+              fullWidth={true}
+              horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
                 <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
@@ -308,7 +313,7 @@ export default class Ipfix extends React.Component {
                     <div>No results found</div>
                   ) : (
                     <div>
-                      <div style={{ display: "flex", margin: "5px" }}>
+                      <div style={{ display: "flex", height: "20px", margin: "5px" }}>
                         <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
                           Source
                         </div>
@@ -320,7 +325,7 @@ export default class Ipfix extends React.Component {
                         </div>
                       </div>
                       <Sankey
-                        height={height}
+                        height={height - 30}
                         links={renderLinks}
                         nodes={renderNodes}
                         onLinkClick={this.handleSankeyLinkClick}
