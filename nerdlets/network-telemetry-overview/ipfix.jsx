@@ -290,8 +290,8 @@ export default class Ipfix extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
-              alignmentType={Stack.ALIGNMENT_TYPE.FILL}
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
+              horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
                 <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
