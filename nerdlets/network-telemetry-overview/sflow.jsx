@@ -40,7 +40,7 @@ export default class Sflow extends React.Component {
     const { height, width } = this.props;
 
     this.state = {
-      height: height - 2 * SUB_MENU_HEIGHT,
+      height: height - SUB_MENU_HEIGHT - 10,
       isLoading: true,
       links: [],
       nodes: [],
@@ -231,6 +231,8 @@ export default class Sflow extends React.Component {
           <GridItem columnSpan={8}>
             <Stack
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
+              fullHeight={true}
+              fullWidth={true}
               horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>

@@ -56,7 +56,7 @@ export default class Ipfix extends React.Component {
       detailData: null,
       detailHidden: true,
       filterPrivateAsns: true,
-      height: height - 2 * SUB_MENU_HEIGHT,
+      height: height - SUB_MENU_HEIGHT - 10,
       isLoading: true,
       links: [],
       nodes: [],
@@ -291,6 +291,8 @@ export default class Ipfix extends React.Component {
           <GridItem columnSpan={8}>
             <Stack
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
+              fullHeight={true}
+              fullWidth={true}
               horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
@@ -311,7 +313,7 @@ export default class Ipfix extends React.Component {
                     <div>No results found</div>
                   ) : (
                     <div>
-                      <div style={{ display: "flex", margin: "5px" }}>
+                      <div style={{ display: "flex", height: "20px", margin: "5px" }}>
                         <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
                           Source
                         </div>
@@ -323,7 +325,7 @@ export default class Ipfix extends React.Component {
                         </div>
                       </div>
                       <Sankey
-                        height={height}
+                        height={height - 30}
                         links={renderLinks}
                         nodes={renderNodes}
                         onLinkClick={this.handleSankeyLinkClick}
