@@ -1,4 +1,15 @@
-import { BlockText, Checkbox, Grid, GridItem, Radio, RadioGroup, Spinner, nerdlet } from "nr1";
+import {
+  BlockText,
+  Checkbox,
+  Grid,
+  GridItem,
+  HeadingText,
+  Icon,
+  Radio,
+  RadioGroup,
+  Spinner,
+  nerdlet,
+} from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
@@ -180,7 +191,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           <GridItem columnSpan={10}>
             <div className='main-container'>
               {isLoading ? (
-                <Spinner fillContainer />
+                !account.id ? (
+                  <div className='select-account'>
+                    <HeadingText type={HeadingText.TYPE.HEADING_1}>
+                      <Icon
+                        sizeType={Icon.SIZE_TYPE.LARGE}
+                        type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT}
+                      />
+                      Please Select an Account
+                    </HeadingText>
+                  </div>
+                ) : (
+                  <Spinner fillContainer />
+                )
               ) : (
                 <DsComponent
                   account={account}
