@@ -1,5 +1,5 @@
-import nrdbQuery from "./nrdb-query";
 import accountsWithData from "./accounts-with-data";
+import nrdbQuery from "./nrdb-query";
 
 /**
  * look across all the accounts the user has access to, scoped to the provided
@@ -22,7 +22,7 @@ export default async function findRelatedAccountsWith({ eventType, where, timeWi
   const result = [];
   await Promise.all(
     accounts.map(async account => {
-      return await nrdbQuery(account.id, nrql).then(results => {
+      return nrdbQuery(account.id, nrql).then(results => {
         const hitCount = results[0].count;
         if (hitCount > 0) {
           account.hitCount = hitCount;

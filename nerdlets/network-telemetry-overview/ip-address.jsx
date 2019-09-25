@@ -48,7 +48,13 @@ export default class IpAddress extends React.Component {
     const { searching } = this.state || {};
     const className = searching ? "ip-address-searching" : "ip-address";
     return (
-      <div className={className} onClick={this.onClick}>
+      <div
+        className={className}
+        onClick={this.onClick}
+        onKeyPress={this.onClick}
+        role='button'
+        tabIndex={0}
+      >
         {this.props.value || "(unknown)"}
       </div>
     );
