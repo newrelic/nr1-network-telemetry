@@ -173,3 +173,11 @@ label {
 .select-account {
   margin: 20px;
 }
+
+.ip-address:hover {
+  cursor: pointer;
+}
+
+.ip-address-searching:hover {
+  cursor: wait;  
+}
