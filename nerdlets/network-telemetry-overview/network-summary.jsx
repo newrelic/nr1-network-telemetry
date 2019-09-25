@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Table } from "semantic-ui-react";
 import { renderDeviceHeader } from "./common";
-import IpAddress from './ip-address'
+import IpAddress from "./ip-address";
 
 export default class NetworkSummary extends React.Component {
   static propTypes = {
@@ -61,7 +61,7 @@ export default class NetworkSummary extends React.Component {
                 default:
                   return (
                     <Table.Cell key={`${idx}-${i}`}>
-                      <IpAddress value={node[c.data]}/>
+                      <IpAddress value={node[c.data]} />
                     </Table.Cell>
                   );
               }
