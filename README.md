@@ -29,8 +29,14 @@ This project is distributed under the [Apache 2 license](LICENSE).
 1. [New Relic Network Telemetry On-host Integration installed](https://github.com/newrelic/nri-network-telemetry)
 
 ## Getting started
+First, ensure that you have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [NPM](https://www.npmjs.com/get-npm) installed. If you're unsure whether you have one or both of them installed, run the following command(s) (If you have them installed these commands will return a version number, if not, the commands won't be recognized):
 
-Clone this repository and run the following scripts:
+```bash
+git --version
+npm -v
+```
+
+Next, clone this repository and run the following scripts:
 
 ```bash
 git clone https://github.com/newrelic/nr1-network-telemetry.git
