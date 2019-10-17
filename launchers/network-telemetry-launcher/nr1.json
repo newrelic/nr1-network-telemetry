@@ -3,5 +3,5 @@
   "id": "network-telemetry-launcher",
   "description": "Network Telemetry",
   "displayName": "Network Telemetry",
-  "rootNerdletId": "38ea824d-60d8-4072-b6e8-ed96c26f5eaa.network-telemetry-overview"
+  "rootNerdletId": "network-telemetry-overview"
 }
