@@ -1,5 +1,6 @@
 import { bitsToSize, intToSize } from "../../src/lib/bytes-to-size";
 
+import IpAddress from "./ip-address";
 import PropTypes from "prop-types";
 import React from "react";
 import { Table } from "semantic-ui-react";
@@ -60,7 +61,7 @@ export default class NetworkSummary extends React.Component {
                 default:
                   return (
                     <Table.Cell key={`${idx}-${i}`}>
-                      {node[c.data] !== null ? node[c.data] : "(unknown)"}
+                      <IpAddress value={node[c.data]} />
                     </Table.Cell>
                   );
               }
