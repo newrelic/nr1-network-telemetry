@@ -320,7 +320,7 @@ jobs:
       - run:
           name: "ESLinting"
           command: |
-            npm run eslint-check
+            npm run lint
 
   job-test-pr:
     executor: node10browsers
