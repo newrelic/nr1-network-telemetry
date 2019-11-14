@@ -32,7 +32,7 @@ export default class IpAddress extends React.Component {
       description: `Could not find ${ipAddress} on any monitored hosts.`,
       title: "IP Address Not Found",
       type: Toast.TYPE.NORMAL,
-    }
+    };
 
     const accounts = await findRelatedAccountsWith({ eventType: "NetworkSample", where });
     if (accounts.length === 0) {
@@ -41,11 +41,10 @@ export default class IpAddress extends React.Component {
       const account = accounts[0];
       const nrql = `SELECT latest(entityGuid) as entityGuid FROM NetworkSample WHERE ${where} SINCE 2 minutes ago`;
       const results = await nrdbQuery(account.id, nrql);
-      if(results && results.length > 0 && results[0].entityGuid) {
+      if (results && results.length > 0 && results[0].entityGuid) {
         navigation.openStackedEntity(results[0].entityGuid);
-      }
-      else {
-        Toast.showToast(notFoundToast)
+      } else {
+        Toast.showToast(notFoundToast);
       }
     }
     this.setState({ searching: false });
