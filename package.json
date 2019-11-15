@@ -54,6 +54,8 @@
         "@babel/preset-react": "^7.0.0",
         "@commitlint/cli": "^8.1.0",
         "@commitlint/config-conventional": "^8.1.0",
+        "@semantic-release/changelog": "^3.0.5",
+        "@semantic-release/git": "^7.0.18",
         "@typescript-eslint/eslint-plugin": "^2.2.0",
         "@typescript-eslint/experimental-utils": "^2.2.0",
         "@typescript-eslint/parser": "^2.2.0",
