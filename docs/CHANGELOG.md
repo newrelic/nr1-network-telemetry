@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.2.0...v0.3.0) (2020-01-30)
+
+
+### Features
+
+* limit width of src in network summary table ([8525e9b](https://github.com/newrelic/nr1-network-telemetry/commit/8525e9bbcec179c93cc7b7a562b02561c08baa3a)), closes [#10](https://github.com/newrelic/nr1-network-telemetry/issues/10)
+
 # [0.2.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.1.3...v0.2.0) (2019-11-15)
 
 
