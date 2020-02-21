@@ -4,8 +4,7 @@
 
 ## Usage
 
-nr1-network-telemetry visualizes data collected through the [Network
-Telemetry](https://github.com/newrelic/nri-network-telemetry) Integration.
+The Network Telemetry application displays the data collected by the [`Network Telemetry`](https://github.com/newrelic/nri-network-telemetry) Integration.
 
 ### IPFIX Visualization
 
@@ -23,12 +22,12 @@ View the top talkers in your network, and who they are communicating with.
 
 This project is distributed under the [Apache 2 license](LICENSE).
 
-## What do you need to make this work?
+## Dependencies
 
-1. [New Relic Infrastructure Agent(s) installed](https://newrelic.com/products/infrastructure) and the related access to [New Relic One](https://newrelic.com/platform).
-1. [New Relic Network Telemetry On-host Integration installed](https://github.com/newrelic/nri-network-telemetry)
+Requires [`New Relic Infrastructure`](https://newrelic.com/products/infrastructure) and the [`Network Telemetry`](https://github.com/newrelic/nri-network-telemetry) Integration.
 
 ## Getting started
+
 First, ensure that you have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [NPM](https://www.npmjs.com/get-npm) installed. If you're unsure whether you have one or both of them installed, run the following command(s) (If you have them installed these commands will return a version number, if not, the commands won't be recognized):
 
 ```bash
@@ -45,41 +44,39 @@ npm install
 npm start
 ```
 
-Visit https://one.newrelic.com/?nerdpacks=local, navigate to the Nerdpack, and :sparkles:
+Visit [https://one.newrelic.com/?nerdpacks=local](https://one.newrelic.com/?nerdpacks=local), navigate to the Nerdpack, and :sparkles:
 
-# Deploying this Nerdpack
+## Deploying this Nerdpack
 
 Open a command prompt in the nerdpack's directory and run the following commands.
 
 ```bash
-# this is to create a new uuid for the nerdpack so that you can deploy it to your account
-nr1 nerdpack:uuid -g [--profile=your_profile_name]
-# to see a list of APIkeys / profiles available in your development environment, run nr1 credentials:list
+# To create a new uuid for the nerdpack so that you can deploy it to your account:
+# nr1 nerdpack:uuid -g [--profile=your_profile_name]
+
+# To see a list of APIkeys / profiles available in your development environment:
+# nr1 credentials:list
+
 nr1 nerdpack:publish [--profile=your_profile_name]
 nr1 nerdpack:deploy [-c [DEV|BETA|STABLE]] [--profile=your_profile_name]
 nr1 nerdpack:subscribe [-c [DEV|BETA|STABLE]] [--profile=your_profile_name]
 ```
 
-Visit https://one.newrelic.com, navigate to the Nerdpack, and :sparkles:
+Visit [https://one.newrelic.com](https://one.newrelic.com), navigate to the Nerdpack, and :sparkles:
 
-# Support
+## Community Support
 
-New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR SUPPORT, although you can report issues and contribute to the project here on GitHub.
+New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all New Relic open source community projects, there's a related topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
 
-_Please do not report issues with this software to New Relic Global Technical Support._
+[https://discuss.newrelic.com/t/network-telemetry-nerdpack/90561](https://discuss.newrelic.com/t/network-telemetry-nerdpack/90561)
 
-## Community
-
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
-
-https://discuss.newrelic.com/c/build-on-new-relic/nr1-network-telemetry
-*(Note: URL subject to change before GA)*
+Please do not report issues with Network Telemetry to New Relic Global Technical Support. Instead, visit the [`Explorers Hub`](https://discuss.newrelic.com/c/build-on-new-relic) for troubleshooting and best-practices.
 
 ## Issues / Enhancement Requests
 
 Issues and enhancement requests can be submitted in the [Issues tab of this repository](https://github.com/newrelic/nr1-network-telemetry/issues). Please search for and review the existing open issues before submitting a new issue.
 
-# Contributing
+## Contributing
 
 Contributions are welcome (and if you submit a Enhancement Request, expect to be invited to contribute it yourself :grin:). Please review our [Contributors Guide](CONTRIBUTING.md).
 
