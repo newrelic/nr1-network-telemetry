@@ -12,17 +12,17 @@ The Network Telemetry application displays the data collected by the [`Network T
 
 Quickly identify where traffic is coming from and going to across your routing tier.
 
-![Screenshot #1](./catalog/screenshots/nr1-network-telemetry-1.png)
+![Screenshot #1](https://github.com/newrelic/nr1-network-telemetry/catalog/screenshots/nr1-network-telemetry-1.png)
 
 ### Sflow Visualization
 
 View the top talkers in your network, and who they are communicating with.
 
-![Screenshot #2](./catalog/screenshots/nr1-network-telemetry-2.png)
+![Screenshot #2](https://github.com/newrelic/nr1-network-telemetry/catalog/screenshots/nr1-network-telemetry-2.png)
 
 ## Open Source License
 
-This project is distributed under the [Apache 2 license](./LICENSE).
+This project is distributed under the [Apache 2 license](https://github.com/newrelic/nr1-network-telemetry/blog/master/LICENSE).
 
 ## Dependencies
 
@@ -79,6 +79,6 @@ Issues and enhancement requests can be submitted in the [Issues tab of this repo
 
 ## Contributing
 
-Contributions are welcome (and if you submit a Enhancement Request, expect to be invited to contribute it yourself :grin:). Please review our [Contributors Guide](./CONTRIBUTING.md).
+Contributions are welcome (and if you submit a Enhancement Request, expect to be invited to contribute it yourself :grin:). Please review our [Contributors Guide](https://github.com/newrelic/nr1-network-telemetry/blob/master/CONTRIBUTING.md).
 
 Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. If you'd like to execute our corporate CLA, or if you have any questions, please drop us an email at opensource+nr1-network-telemetry@newrelic.com.
