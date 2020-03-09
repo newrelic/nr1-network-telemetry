@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.3.0...v0.4.0) (2020-03-09)
+
+
+### Features
+
+* **catalog:** add catalog metadata files ([#32](https://github.com/newrelic/nr1-network-telemetry/issues/32)) ([32620ca](https://github.com/newrelic/nr1-network-telemetry/commit/32620ca78b652035b632cc4d791a673a9e4f4fdf)), closes [newrelic/nr1-network-telemetry#31](https://github.com/newrelic/nr1-network-telemetry/issues/31)
+
 # [0.3.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.2.0...v0.3.0) (2020-01-30)
 
 
