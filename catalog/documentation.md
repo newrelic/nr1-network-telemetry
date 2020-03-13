@@ -1,9 +1,3 @@
-[![New Relic One Catalog Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/New_Relic_One_Catalog_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#nr1-catalog)
-
-# nr1-network-telemetry
-
-![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/newrelic/nr1-network-telemetry?include_prereleases&sort=semver) ![AppVeyor](https://img.shields.io/appveyor/ci/newrelic/nr1-network-telemetry) [![Snyk](https://snyk.io/test/github/newrelic/nr1-network-telemetry/badge.svg)](https://snyk.io/test/github/newrelic/nr1-network-telemetry)
-
 ## Usage
 
 The Network Telemetry application displays the data collected by the [`Network Telemetry`](https://github.com/newrelic/nri-network-telemetry) Integration.
@@ -12,13 +6,9 @@ The Network Telemetry application displays the data collected by the [`Network T
 
 Quickly identify where traffic is coming from and going to across your routing tier.
 
-![Screenshot #1](https://github.com/newrelic/nr1-network-telemetry/catalog/screenshots/nr1-network-telemetry-1.png)
-
 ### Sflow Visualization
 
 View the top talkers in your network, and who they are communicating with.
-
-![Screenshot #2](https://github.com/newrelic/nr1-network-telemetry/catalog/screenshots/nr1-network-telemetry-2.png)
 
 ## Open Source License
 
