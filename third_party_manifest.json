@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "Mon Mar 09 2020 12:50:40 GMT+0000 (Coordinated Universal Time)",
+  "lastUpdated": "Mon Mar 30 2020 16:27:44 GMT+0000 (Coordinated Universal Time)",
   "projectName": "nr1-network-telemetry",
   "projectUrl": "https://github.com/newrelic/nr1-network-telemetry",
   "includeDev": true,
@@ -552,15 +552,15 @@
       "publisher": "Sebastiaan Deckers",
       "email": "sebdeckers83@gmail.com"
     },
-    "eslint@6.4.0": {
+    "eslint@6.8.0": {
       "name": "eslint",
-      "version": "6.4.0",
-      "range": "^6.4.0",
+      "version": "6.8.0",
+      "range": "^6.8.0",
       "licenses": "MIT",
       "repoUrl": "https://github.com/eslint/eslint",
-      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v6.4.0",
+      "versionedRepoUrl": "https://github.com/eslint/eslint/tree/v6.8.0",
       "licenseFile": "node_modules/eslint/LICENSE",
-      "licenseUrl": "https://github.com/eslint/eslint/blob/v6.4.0/LICENSE",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v6.8.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Nicholas C. Zakas",
       "email": "nicholas+npm@nczconsulting.com"
