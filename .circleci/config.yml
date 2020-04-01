@@ -218,7 +218,7 @@ commands:
 
             declare -a files=(
               "README.md"
-              ".prettierrc.js"
+              ".prettierrc.yaml"
               ".eslintrc.js"
               ".gitignore"
               ".circleci/config.yml"
