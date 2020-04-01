@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.4.0...v0.4.1) (2020-04-01)
+
+
+### Bug Fixes
+
+* nerdpack ga updates ([#36](https://github.com/newrelic/nr1-network-telemetry/issues/36)) ([dd694f5](https://github.com/newrelic/nr1-network-telemetry/commit/dd694f5ee4543ed805a2802a7fbc3d92c837dba7)), closes [#35](https://github.com/newrelic/nr1-network-telemetry/issues/35)
+
 # [0.4.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.3.0...v0.4.0) (2020-03-09)
 
 
