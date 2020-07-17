@@ -1,5 +1,4 @@
 import { AutoSizer, NerdletStateContext, PlatformStateContext } from "nr1";
-
 import NetworkTelemetryNerdlet from "./network-telemetry-nerdlet";
 import React from "react";
 

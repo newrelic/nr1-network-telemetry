@@ -5,7 +5,7 @@ import {
   Spinner,
   UserStorageMutation,
   UserStorageQuery,
-  nerdlet,
+  nerdlet
 } from "nr1";
 import PropTypes from "prop-types";
 import React from "react";
@@ -28,6 +28,7 @@ export class AccountDropdown extends React.Component {
     accountFilter: PropTypes.func,
     className: PropTypes.any,
     collection: PropTypes.string,
+    onLoaded: PropTypes.func,
     onSelect: PropTypes.func,
     style: PropTypes.any,
     title: PropTypes.string,
@@ -123,6 +124,8 @@ export class AccountDropdown extends React.Component {
         result[account.id] = account;
         return result;
       }, {}),
+    }, () => {
+      this.props.onLoaded(this.state.accounts);
     });
   }
 
@@ -157,16 +160,23 @@ export class AccountDropdown extends React.Component {
   render() {
     const { accountFilter, className, style, title } = this.props;
     const { accounts, defaultAccount, selected } = this.state;
+    let items;
 
     if (!accounts || defaultAccount === undefined) {
       return <Spinner fillcontainer />;
     }
 
-    const items = accounts.filter(accountFilter).map(account => (
-      <DropdownItem key={account.id} onClick={() => this.select(account)}>
-        {account.name}
-      </DropdownItem>
-    ));
+    const filteredAccounts = accounts.filter(accountFilter);
+
+    if (accounts && filteredAccounts.length === 0) {
+      items = <DropdownItem>No accounts found for this Nerdpack or for your user.</DropdownItem>
+    } else {
+      items = filteredAccounts.map(account => (
+        <DropdownItem key={account.id} onClick={() => this.select(account)}>
+          {account.name}
+        </DropdownItem>
+      ));
+    }
 
     return (
       <Dropdown className={className} style={style} title={(selected || {}).name || title}>

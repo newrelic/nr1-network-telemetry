@@ -5,14 +5,13 @@
   "version": "0.4.1",
   "scripts": {
     "checkversion": "check-node-version --node $(cat .nvmrc)",
-    "format": "prettier \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore --list-different",
-    "format:fix": "npm run format -- --write",
+    "format": "prettier \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore",
+    "format:fix": "npm run format --write",
     "lint": "npm-run-all --parallel format lint:*",
     "lint:css": "stylelint 'nerdlets/**/*.scss' --syntax scss",
     "lint:css:fix": "npm run lint:css -- --fix",
     "lint:js": "eslint --ext js,jsx --ignore-path .eslintignore .",
     "lint:js:fix": "npm run lint:js -- --fix",
-    "lint:ts": "tsc",
     "start": "nr1 nerdpack:serve",
     "test": "npm-run-all --sequential checkversion lint test:js",
     "test:js": "jest",
@@ -29,6 +28,7 @@
     "email": "opensource@newrelic.com"
   },
   "dependencies": {
+    "@newrelic/nr1-community": "^1.2.0",
     "d3": "^5.12.0",
     "lodash": "^4.17.15",
     "prop-types": "^15.6.2",
