@@ -13,7 +13,11 @@ import nrdbQuery from "./nrdb-query";
  * Run account queries in parallel (limited by the browser's capacity for parallel requests)
  * and return the array of accounts, each with a hit count in descending order.
  */
-export default async function findRelatedAccountsWith({ eventType, where, timeWindow }) {
+export default async function findRelatedAccountsWith({
+  eventType,
+  where,
+  timeWindow
+}) {
   timeWindow = timeWindow || "SINCE 2 minutes ago";
 
   const accounts = await accountsWithData(eventType);

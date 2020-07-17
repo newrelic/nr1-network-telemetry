@@ -9,7 +9,7 @@ export default class IpfixDetail extends React.Component {
     accountId: PropTypes.number.isRequired,
     filter: PropTypes.string,
     hideLabels: PropTypes.bool,
-    name: PropTypes.string,
+    name: PropTypes.string
   };
 
   /*
@@ -48,27 +48,33 @@ export default class IpfixDetail extends React.Component {
       " TIMESERIES";
 
     return (
-      <div className='modal'>
+      <div className="modal">
         <ChartGroup>
           {renderDeviceHeader(displayName, "Network Entity")}
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Total Throughput</HeadingText>
+          <HeadingText type={HeadingText.TYPE.HEADING4}>
+            Total Throughput
+          </HeadingText>
           <ChartComponent
             accountId={accountId || null}
-            className='side-info-chart'
+            className="side-info-chart"
             query={throughputQuery}
           />
 
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Throughput by Destination IP</HeadingText>
+          <HeadingText type={HeadingText.TYPE.HEADING4}>
+            Throughput by Destination IP
+          </HeadingText>
           <ChartComponent
             accountId={accountId || null}
-            className='side-info-chart'
+            className="side-info-chart"
             query={destQuery}
           />
 
-          <HeadingText type={HeadingText.TYPE.HEADING4}>Flows by Protocol</HeadingText>
+          <HeadingText type={HeadingText.TYPE.HEADING4}>
+            Flows by Protocol
+          </HeadingText>
           <ChartComponent
             accountId={accountId || null}
-            className='side-info-chart'
+            className="side-info-chart"
             query={protocolQuery}
           />
         </ChartGroup>

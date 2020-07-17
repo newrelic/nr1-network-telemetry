@@ -17,7 +17,13 @@ export const fetchRelationshipFacets = async (accountId, nrqlQuery) => {
       const ids = (row.facet || []).map(f => {
         const id = nodes.findIndex(node => node.name === f);
         if (id < 0)
-          return nodes.push({ color: COLORS[nodes.length % COLORS.length], name: f, value: 0 }) - 1;
+          return (
+            nodes.push({
+              color: COLORS[nodes.length % COLORS.length],
+              name: f,
+              value: 0
+            }) - 1
+          );
 
         return id;
       });
@@ -28,7 +34,9 @@ export const fetchRelationshipFacets = async (accountId, nrqlQuery) => {
 
       // Update existing links (0 => 1 => 2 etc)
       for (let x = 0; x < ids.length - 1; x++) {
-        const sa = links.findIndex(link => link.source === ids[x] && link.target === ids[x + 1]);
+        const sa = links.findIndex(
+          link => link.source === ids[x] && link.target === ids[x + 1]
+        );
         if (sa >= 0) {
           links[sa].value += value;
         } else {
@@ -37,7 +45,7 @@ export const fetchRelationshipFacets = async (accountId, nrqlQuery) => {
             source: ids[x],
             sourceId: ids[0],
             target: ids[x + 1],
-            value,
+            value
           });
         }
       }

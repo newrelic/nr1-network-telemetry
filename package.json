@@ -5,8 +5,8 @@
   "version": "0.4.1",
   "scripts": {
     "checkversion": "check-node-version --node $(cat .nvmrc)",
-    "format": "prettier \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore",
-    "format:fix": "npm run format --write",
+    "format": "prettier --check \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore",
+    "format:fix": "prettier --write \"**/*.js\" \"**/*.json\" \"**/*.jsx\" \"**/*.scss\" --ignore-path .eslintignore",
     "lint": "npm-run-all --parallel format lint:*",
     "lint:css": "stylelint 'nerdlets/**/*.scss' --syntax scss",
     "lint:css:fix": "npm run lint:css -- --fix",

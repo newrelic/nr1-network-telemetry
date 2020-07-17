@@ -17,5 +17,7 @@ export default async function accountsWithData(eventType) {
     return [];
   }
 
-  return result.data.actor.accounts.filter(a => a.reportingEventTypes.length > 0);
+  return result.data.actor.accounts.filter(
+    a => a.reportingEventTypes.length > 0
+  );
 }

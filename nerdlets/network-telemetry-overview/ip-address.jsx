@@ -12,7 +12,7 @@ import nrdbQuery from "../../src/lib/nrdb-query";
  */
 export default class IpAddress extends React.Component {
   static propTypes = {
-    value: PropTypes.string,
+    value: PropTypes.string
   };
 
   constructor(props) {
@@ -31,10 +31,13 @@ export default class IpAddress extends React.Component {
     const notFoundToast = {
       description: `Could not find ${ipAddress} on any monitored hosts.`,
       title: "IP Address Not Found",
-      type: Toast.TYPE.NORMAL,
+      type: Toast.TYPE.NORMAL
     };
 
-    const accounts = await findRelatedAccountsWith({ eventType: "NetworkSample", where });
+    const accounts = await findRelatedAccountsWith({
+      eventType: "NetworkSample",
+      where
+    });
     if (accounts.length === 0) {
       Toast.showToast(notFoundToast);
     } else {
@@ -58,7 +61,7 @@ export default class IpAddress extends React.Component {
         className={className}
         onClick={this.onClick}
         onKeyPress={this.onClick}
-        role='button'
+        role="button"
         tabIndex={0}
       >
         {this.props.value || "(unknown)"}

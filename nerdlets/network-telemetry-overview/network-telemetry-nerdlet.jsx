@@ -16,7 +16,7 @@ import {
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
   NRQL_QUERY_LIMIT_MAX,
-  NRQL_QUERY_LIMIT_MIN,
+  NRQL_QUERY_LIMIT_MIN
 } from "./constants";
 import { AccountDropdown } from "../../src/components/account-dropdown";
 import { EmptyState } from "@newrelic/nr1-community";
@@ -29,7 +29,7 @@ import debounce from "lodash/debounce";
 
 const DATA_SOURCES = [
   { component: Ipfix, eventType: "ipfix", name: "ipfix" },
-  { component: Sflow, eventType: "sflow", name: "sflow" },
+  { component: Sflow, eventType: "sflow", name: "sflow" }
 ];
 
 export default class NetworkTelemetryNerdlet extends React.Component {
@@ -37,24 +37,27 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     height: PropTypes.number,
     launcherUrlState: PropTypes.object,
     nerdletUrlState: PropTypes.object,
-    width: PropTypes.number,
+    width: PropTypes.number
   };
 
   constructor(props) {
     super(props);
 
-    const intervalSeconds = this.props.nerdletUrlState.intervalSeconds || INTERVAL_SECONDS_DEFAULT;
+    const intervalSeconds =
+      this.props.nerdletUrlState.intervalSeconds || INTERVAL_SECONDS_DEFAULT;
 
     this.state = {
       account: {},
       accountsList: [],
       intervalSlider: intervalSeconds, // Track slider local, value in URL
-      isLoading: true,
+      isLoading: true
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
     this.handleDataSourceChange = this.handleDataSourceChange.bind(this);
-    this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
+    this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(
+      this
+    );
     this.handleLimitChange = this.handleLimitChange.bind(this);
     this.handleHideLabelsChange = this.handleHideLabelsChange.bind(this);
   }
@@ -88,7 +91,10 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   handleLimitChange(evt, value) {
     const queryLimit = parseInt(value, 10);
 
-    if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
+    if (
+      queryLimit >= NRQL_QUERY_LIMIT_MIN &&
+      queryLimit <= NRQL_QUERY_LIMIT_MAX
+    ) {
       nerdlet.setUrlState({ queryLimit });
     }
   }
@@ -101,9 +107,9 @@ export default class NetworkTelemetryNerdlet extends React.Component {
 
   handleAccountsLoaded = accountsList => {
     if (accountsList && accountsList.length < 0) {
-      this.setState({accountsList})
+      this.setState({ accountsList });
     }
-  }
+  };
 
   accountFilter(account) {
     return DATA_SOURCES.reduce((found, source) => {
@@ -116,18 +122,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    */
   renderMainMenu() {
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
-    const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
+    const queryLimit =
+      this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
     const hideLabels = this.props.nerdletUrlState.hideLabels || false;
     const { intervalSlider } = this.state;
 
     return (
-      <div className='side-menu'>
+      <div className="side-menu">
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Account</strong>
         </BlockText>
         <AccountDropdown
           accountFilter={this.accountFilter}
-          className='account-dropdown'
+          className="account-dropdown"
           onLoaded={this.handleAccountsLoaded}
           onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
@@ -135,7 +142,10 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
         </BlockText>
-        <RadioGroup onChange={this.handleDataSourceChange} value={`${dataSource}`}>
+        <RadioGroup
+          onChange={this.handleDataSourceChange}
+          value={`${dataSource}`}
+        >
           {DATA_SOURCES.map((v, i) => (
             <Radio key={i} label={v.name} value={`${i}`} />
           ))}
@@ -144,8 +154,8 @@ export default class NetworkTelemetryNerdlet extends React.Component {
 
         <Checkbox
           checked={hideLabels}
-          className='checkbox'
-          label='Hide Labels'
+          className="checkbox"
+          label="Hide Labels"
           onChange={this.handleHideLabelsChange}
         />
         <br />
@@ -155,16 +165,16 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           <strong>Limit results to about...</strong>
         </BlockText>
         <RadioGroup onChange={this.handleLimitChange} value={`${queryLimit}`}>
-          <Radio label='25 devices' value='25' />
-          <Radio label='50 devices' value='50' />
-          <Radio label='100 devices' value='100' />
+          <Radio label="25 devices" value="25" />
+          <Radio label="50 devices" value="50" />
+          <Radio label="100 devices" value="100" />
         </RadioGroup>
         <br />
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Refresh rate:</strong>
         </BlockText>
         <br />
-        <div className='interval-range'>
+        <div className="interval-range">
           <InputRange
             formatLabel={value => `${value}s`}
             maxValue={INTERVAL_SECONDS_MAX}
@@ -181,7 +191,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
 
   renderSelectAccountAlert = () => {
     return (
-      <div className='select-account'>
+      <div className="select-account">
         <HeadingText type={HeadingText.TYPE.HEADING_1}>
           <Icon
             sizeType={Icon.SIZE_TYPE.LARGE}
@@ -190,14 +200,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           Please Select an Account
         </HeadingText>
       </div>
-    )
-  }
+    );
+  };
 
   renderDSComponent = () => {
     const { height } = this.props;
     const { timeRange } = this.props.launcherUrlState;
 
-    const { intervalSeconds, queryLimit, hideLabels = false, dataSource = 0 } = this.props.nerdletUrlState;
+    const {
+      intervalSeconds,
+      queryLimit,
+      hideLabels = false,
+      dataSource = 0
+    } = this.props.nerdletUrlState;
     const { account } = this.state;
 
     const DsComponent = (DATA_SOURCES[dataSource] || {}).component; // TODO: || Instructions
@@ -211,8 +226,8 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
         timeRange={timeRange}
       />
-    )
-  }
+    );
+  };
 
   renderAccountsListError = () => {
     return (
@@ -220,10 +235,11 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         buttonText=""
         description={
           "No accounts found for this Nerdpack or for your user. See your Nerdpack Manager with concerns."
-        } heading={"No Accounts Found"} 
+        }
+        heading={"No Accounts Found"}
       />
-    )
-  }
+    );
+  };
 
   /*
    * Main Renderer
@@ -232,15 +248,19 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     const { account, isLoading, accountsList } = this.state;
 
     return (
-      <div className='background'>
-        <Grid className='fullheight'>
+      <div className="background">
+        <Grid className="fullheight">
           <GridItem columnSpan={2}>{this.renderMainMenu()}</GridItem>
           <GridItem columnSpan={10}>
-            <div className='main-container'>
-              { isLoading && account.id && <Spinner fillContainer /> }
-              { !account.id && accountsList.length > 0 && this.renderSelectAccountAlert() }
-              { !account.id &&  accountsList.length === 0 && this.renderAccountsListError() }
-              { !isLoading && account.id && this.renderDSComponent() }
+            <div className="main-container">
+              {isLoading && account.id && <Spinner fillContainer />}
+              {!account.id &&
+                accountsList.length > 0 &&
+                this.renderSelectAccountAlert()}
+              {!account.id &&
+                accountsList.length === 0 &&
+                this.renderAccountsListError()}
+              {!isLoading && account.id && this.renderDSComponent()}
             </div>
           </GridItem>
         </Grid>

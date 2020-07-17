@@ -13,28 +13,35 @@ export default class NetworkSummary extends React.Component {
     deviceName: PropTypes.string,
     deviceType: PropTypes.string,
     height: PropTypes.number,
-    hideLabels: PropTypes.bool,
+    hideLabels: PropTypes.bool
   };
 
   static defaultProps = {
     columns: [
       { align: "center", data: "color", label: null },
       { align: "left", data: "name", label: "Source" },
-      { align: "right", data: "value", label: "Throughput" },
+      { align: "right", data: "value", label: "Throughput" }
     ],
     data: [],
     deviceName: "All Devices",
     deviceType: "Device",
     height: "100%",
     hideLabels: false,
-    selectedNodeId: null,
+    selectedNodeId: null
   };
 
   /*
    * Main render
    */
   render() {
-    const { columns, data, deviceName, deviceType, height, hideLabels } = this.props;
+    const {
+      columns,
+      data,
+      deviceName,
+      deviceType,
+      height,
+      hideLabels
+    } = this.props;
 
     const rows = data
       .filter(a => a.value > 0)
@@ -47,12 +54,19 @@ export default class NetworkSummary extends React.Component {
                 case "color":
                   return (
                     <Table.Cell collapsing key={`${idx}-${i}`}>
-                      <div className='color-circle' style={{ backgroundColor: node.color }} />
+                      <div
+                        className="color-circle"
+                        style={{ backgroundColor: node.color }}
+                      />
                     </Table.Cell>
                   );
                 case "value":
                   return (
-                    <Table.Cell collapsing key={`${idx}-${i}`} textAlign='right'>
+                    <Table.Cell
+                      collapsing
+                      key={`${idx}-${i}`}
+                      textAlign="right"
+                    >
                       {c.type && c.type === "count"
                         ? intToSize(node.value, hideLabels)
                         : bitsToSize(node.value, hideLabels)}
@@ -75,7 +89,7 @@ export default class NetworkSummary extends React.Component {
     return (
       <div>
         {renderDeviceHeader(deviceName, deviceType)}
-        <div className='network-summary' style={{ height }}>
+        <div className="network-summary" style={{ height }}>
           <Table compact singleLine striped>
             <Table.Header>
               <Table.Row>

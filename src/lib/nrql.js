@@ -22,9 +22,12 @@ export const fetchNrqlResults = async (accountId, query) => {
     query: NERDGRAPH_NRQL_QUERY,
     variables: {
       accountid: accountId,
-      nrql: query,
-    },
+      nrql: query
+    }
   });
 
-  return ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || [];
+  return (
+    ((((results.data || {}).actor || {}).account || {}).nrql || {}).results ||
+    []
+  );
 };

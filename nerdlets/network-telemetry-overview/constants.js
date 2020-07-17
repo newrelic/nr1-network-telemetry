@@ -34,7 +34,7 @@ export const COLORS = [
   "#79428E",
   "#63973A",
   "#C6562C",
-  "#910662",
+  "#910662"
 ];
 
 export const NRQL_QUERY_LIMIT_DEFAULT = 50;
