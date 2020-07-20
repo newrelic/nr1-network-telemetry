@@ -25,14 +25,8 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   }
 
   handleAccountsLoaded = accountsList => {
-    if (accountsList && accountsList.length < 0) {
-      this.setState({ accountsList });
-    }
-  };
-
-  handleAccountsLoaded = accountsList => {
-    if (accountsList && accountsList.length < 0) {
-      this.setState({ accountsList });
+    if (accountsList && accountsList.length > 0) {
+      this.setState({ accountsList, isLoading: false });
     }
   };
 
@@ -98,18 +92,6 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     );
   };
 
-  renderAccountsListError = () => {
-    return (
-      <EmptyState
-        buttonText=''
-        description={
-          'No accounts found for this Nerdpack or for your user. See your Nerdpack Manager with concerns.'
-        }
-        heading={'No Accounts Found'}
-      />
-    );
-  };
-
   render() {
     const { account, isLoading, accountsList } = this.state;
 
@@ -122,13 +104,14 @@ export default class NetworkTelemetryNerdlet extends React.Component {
                 <MainMenu
                   nerdletUrlState={nerdletUrlState}
                   onAccountChange={account => this.setState({ account, isLoading: false })}
+                  onAccountsLoaded={this.handleAccountsLoaded}
                 />
               )}
             </NerdletStateContext.Consumer>
           </GridItem>
           <GridItem columnSpan={10}>
             <div className='main-container'>
-              {isLoading && account.id && <Spinner fillContainer />}
+              {isLoading && <Spinner fillContainer />}
               {!account.id && accountsList.length > 0 && this.renderSelectAccountAlert()}
               {!account.id &&
                 accountsList.length === 0 &&

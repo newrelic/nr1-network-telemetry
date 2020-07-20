@@ -18,6 +18,7 @@ export default class MainMenu extends React.Component {
   static propTypes = {
     nerdletUrlState: PropTypes.object,
     onAccountChange: PropTypes.func,
+    onAccountsLoaded: PropTypes.func,
   };
 
   constructor(props) {
@@ -29,8 +30,6 @@ export default class MainMenu extends React.Component {
       intervalSlider: intervalSeconds,
       isLoading: true,
     };
-
-    this.handleAccountChange = this.handleAccountChange.bind(this);
   }
 
   handleDataSourceChange = (evt, value) => {
@@ -46,11 +45,11 @@ export default class MainMenu extends React.Component {
     }
   }, 500);
 
-  async handleAccountChange(account) {
+  handleAccountChange = async account => {
     if (account) {
       this.props.onAccountChange(account);
     }
-  }
+  };
 
   handleLimitChange(evt, value) {
     const queryLimit = parseInt(value, 10);
@@ -67,9 +66,12 @@ export default class MainMenu extends React.Component {
   }
 
   render() {
-    const dataSource = this.props.nerdletUrlState.dataSource || 0;
-    const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
-    const hideLabels = this.props.nerdletUrlState.hideLabels || false;
+    const {
+      dataSource = 0,
+      queryLimit = NRQL_QUERY_LIMIT_DEFAULT,
+      hideLabels = false,
+    } = this.props.nerdletUrlState;
+    const { nerdletUrlState, onAccountsLoaded } = this.props;
     const { intervalSlider } = this.state;
 
     return (
@@ -80,9 +82,9 @@ export default class MainMenu extends React.Component {
         <AccountDropdown
           accountFilter={this.accountFilter}
           className='account-dropdown'
-          onLoaded={this.handleAccountChange}
+          onLoaded={onAccountsLoaded}
           onSelect={this.handleAccountChange}
-          urlState={this.props.nerdletUrlState}
+          urlState={nerdletUrlState}
         />
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
