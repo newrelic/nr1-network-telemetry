@@ -1,3 +1,4 @@
+import { DATA_SOURCES, INTERVAL_SECONDS_DEFAULT, NRQL_QUERY_LIMIT_DEFAULT } from './constants';
 import {
   Grid,
   GridItem,
@@ -8,7 +9,6 @@ import {
   Spinner,
 } from 'nr1';
 import { EmptyState } from '@newrelic/nr1-community';
-import { DATA_SOURCES, INTERVAL_SECONDS_DEFAULT, NRQL_QUERY_LIMIT_DEFAULT } from './constants';
 import MainMenu from './MainMenu';
 
 import React from 'react';

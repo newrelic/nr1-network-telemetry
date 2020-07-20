@@ -1,5 +1,4 @@
 import { BlockText, Button, Checkbox, Radio, RadioGroup, nerdlet } from 'nr1';
-import { AccountDropdown } from '../../src/components/account-dropdown';
 import {
   DATA_SOURCES,
   INTERVAL_SECONDS_DEFAULT,
@@ -9,6 +8,7 @@ import {
   NRQL_QUERY_LIMIT_MAX,
   NRQL_QUERY_LIMIT_MIN,
 } from './constants';
+import { AccountDropdown } from '../../src/components/account-dropdown';
 import InputRange from 'react-input-range';
 import PropTypes from 'prop-types';
 import React from 'react';
