@@ -1,3 +1,6 @@
+import Ipfix from "./ipfix";
+import Sflow from "./sflow";
+
 /*
  * Constants
  */
@@ -45,3 +48,8 @@ export const NRQL_IPFIX_WHERE_NO_PRIVATE_ASN =
   " WHERE (bgpSourceAsNumber > 1 AND bgpSourceAsNumber < 64495)" +
   " OR (bgpSourceAsNumber > 65534 AND bgpSourceAsNumber < 4200000000)" +
   " OR (bgpSourceAsNumber > 4294967294)";
+
+export const DATA_SOURCES = [
+  { component: Ipfix, eventType: "ipfix", name: "ipfix" },
+  { component: Sflow, eventType: "sflow", name: "sflow" },
+];
