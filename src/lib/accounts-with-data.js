@@ -1,4 +1,4 @@
-import { NerdGraphQuery } from "nr1";
+import { NerdGraphQuery } from 'nr1';
 
 /**
  * For building account pickers, etc. Get the list of all visible accounts that have
@@ -17,7 +17,5 @@ export default async function accountsWithData(eventType) {
     return [];
   }
 
-  return result.data.actor.accounts.filter(
-    a => a.reportingEventTypes.length > 0
-  );
+  return result.data.actor.accounts.filter(a => a.reportingEventTypes.length > 0);
 }

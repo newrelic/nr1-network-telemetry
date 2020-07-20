@@ -1,4 +1,4 @@
-import { NerdGraphQuery } from "nr1";
+import { NerdGraphQuery } from 'nr1';
 
 // NerdGraph query wrapper for NRQL
 export const NERDGRAPH_NRQL_QUERY = `
@@ -22,12 +22,9 @@ export const fetchNrqlResults = async (accountId, query) => {
     query: NERDGRAPH_NRQL_QUERY,
     variables: {
       accountid: accountId,
-      nrql: query
-    }
+      nrql: query,
+    },
   });
 
-  return (
-    ((((results.data || {}).actor || {}).account || {}).nrql || {}).results ||
-    []
-  );
+  return ((((results.data || {}).actor || {}).account || {}).nrql || {}).results || [];
 };

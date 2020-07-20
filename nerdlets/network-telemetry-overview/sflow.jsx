@@ -4,25 +4,16 @@ import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
-  SUB_MENU_HEIGHT
-} from "./constants";
-import {
-  BlockText,
-  Grid,
-  GridItem,
-  Radio,
-  RadioGroup,
-  Spinner,
-  Stack,
-  StackItem
-} from "nr1";
+  SUB_MENU_HEIGHT,
+} from './constants';
+import { BlockText, Grid, GridItem, Radio, RadioGroup, Spinner, Stack, StackItem } from 'nr1';
 
-import ChordDiagram from "react-chord-diagram";
-import NetworkSummary from "./network-summary";
-import PropTypes from "prop-types";
-import React from "react";
-import { fetchRelationshipFacets } from "./fetch";
-import { timeRangeToNrql } from "../../src/components/time-range";
+import ChordDiagram from 'react-chord-diagram';
+import NetworkSummary from './network-summary';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { fetchRelationshipFacets } from './fetch';
+import { timeRangeToNrql } from '../../src/components/time-range';
 
 export default class Sflow extends React.Component {
   static propTypes = {
@@ -33,14 +24,14 @@ export default class Sflow extends React.Component {
     queryLimit: PropTypes.number,
     summaryRenderer: PropTypes.func,
     timeRange: PropTypes.object.isRequired,
-    width: PropTypes.number
+    width: PropTypes.number,
   };
 
   static defaultProps = {
     height: 650,
     hideLabels: false,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
-    width: 700
+    width: 700,
   };
 
   constructor(props) {
@@ -53,9 +44,9 @@ export default class Sflow extends React.Component {
       isLoading: true,
       links: [],
       nodes: [],
-      queryAttribute: "throughput",
+      queryAttribute: 'throughput',
       selectedSourceId: -1,
-      width: width
+      width: width,
     };
 
     this.handleAttributeChange = this.handleAttributeChange.bind(this);
@@ -79,10 +70,7 @@ export default class Sflow extends React.Component {
       this.resetTimer();
     }
 
-    if (
-      this.graphContainer &&
-      this.graphContainer.clientWidth !== prevState.width
-    ) {
+    if (this.graphContainer && this.graphContainer.clientWidth !== prevState.width) {
       const width = this.graphContainer.clientWidth;
       this.setState({ width });
     }
@@ -126,15 +114,12 @@ export default class Sflow extends React.Component {
 
     if (!account || !account.id) return;
 
-    const { nodes, links } = await fetchRelationshipFacets(
-      account.id,
-      this.createNrqlQuery()
-    );
+    const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
     this.setState({
       isLoading: false,
       links,
-      nodes
+      nodes,
     });
   }
 
@@ -142,26 +127,26 @@ export default class Sflow extends React.Component {
     const { queryLimit } = this.props;
     const { queryAttribute } = this.state;
 
-    let attr = "sum(scaledByteCount * 8)";
-    if (queryAttribute === "count") {
-      attr = "count(*)";
+    let attr = 'sum(scaledByteCount * 8)';
+    if (queryAttribute === 'count') {
+      attr = 'count(*)';
     }
 
     return (
-      "FROM sflow" +
-      " SELECT " +
+      'FROM sflow' +
+      ' SELECT ' +
       attr +
       " as 'value'" +
-      " FACET networkSourceAddress, networkDestinationAddress" +
-      " LIMIT " +
+      ' FACET networkSourceAddress, networkDestinationAddress' +
+      ' LIMIT ' +
       queryLimit +
-      " " +
+      ' ' +
       timeRangeToNrql(this.props.timeRange)
     );
   }
 
   handleAttributeChange(evt, attr) {
-    if (attr === "count" || attr === "throughput") {
+    if (attr === 'count' || attr === 'throughput') {
       this.setState({ queryAttribute: attr });
     }
   }
@@ -169,8 +154,7 @@ export default class Sflow extends React.Component {
   handleChartGroupClick(id) {
     const { selectedSourceId } = this.state;
 
-    if (id === selectedSourceId || id === null)
-      this.setState({ selectedSourceId: -1 });
+    if (id === selectedSourceId || id === null) this.setState({ selectedSourceId: -1 });
     else this.setState({ selectedSourceId: id });
   }
 
@@ -178,18 +162,18 @@ export default class Sflow extends React.Component {
     const { queryAttribute } = this.state;
 
     return (
-      <div className="top-menu">
+      <div className='top-menu'>
         <div>
           <BlockText type={BlockText.TYPE.NORMAL}>
             <strong>Show devices with...</strong>
           </BlockText>
           <RadioGroup
-            className="horizontal-radio-group"
+            className='horizontal-radio-group'
             onChange={this.handleAttributeChange}
             value={queryAttribute}
           >
-            <Radio label="Highest Throughput" value="throughput" />
-            <Radio label="Most flows collected" value="count" />
+            <Radio label='Highest Throughput' value='throughput' />
+            <Radio label='Most flows collected' value='count' />
           </RadioGroup>
         </div>
       </div>
@@ -198,15 +182,7 @@ export default class Sflow extends React.Component {
 
   render() {
     const { hideLabels } = this.props;
-    const {
-      isLoading,
-      height,
-      nodes,
-      links,
-      queryAttribute,
-      selectedSourceId,
-      width
-    } = this.state;
+    const { isLoading, height, nodes, links, queryAttribute, selectedSourceId, width } = this.state;
     const outerRadius = Math.min(height, width) * 0.5 - 100;
     const innerRadius = outerRadius - 10;
 
@@ -225,17 +201,15 @@ export default class Sflow extends React.Component {
     links.forEach(link => (matrix[link.source][link.target] = link.value));
 
     const summaryColumns = [
-      { align: "center", data: "color", label: null },
-      { align: "left", data: "source", label: "source" },
-      { align: "left", data: "target", label: "target" },
-      { align: "right", data: "value", label: queryAttribute }
+      { align: 'center', data: 'color', label: null },
+      { align: 'left', data: 'source', label: 'source' },
+      { align: 'left', data: 'target', label: 'target' },
+      { align: 'right', data: 'value', label: queryAttribute },
     ];
 
     const summaryData = links
       .filter(l =>
-        selectedSourceId < 0
-          ? true
-          : l.source === selectedSourceId || l.target === selectedSourceId
+        selectedSourceId < 0 ? true : l.source === selectedSourceId || l.target === selectedSourceId
       )
       .map(l => {
         const source = hideLabels ? l.source : nodes[l.source].name;
@@ -252,8 +226,8 @@ export default class Sflow extends React.Component {
         : null;
 
     return (
-      <div className="background">
-        <Grid className="fullheight">
+      <div className='background'>
+        <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
@@ -262,13 +236,13 @@ export default class Sflow extends React.Component {
               horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
-                <div className="sub-menu" style={{ height: SUB_MENU_HEIGHT }}>
+                <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
                   {this.renderSubMenu()}
                 </div>
               </StackItem>
               <StackItem>
                 <div
-                  className="main-container"
+                  className='main-container'
                   ref={graphContainer => {
                     this.graphContainer = graphContainer;
                   }}
@@ -283,9 +257,7 @@ export default class Sflow extends React.Component {
                       componentId={1}
                       disableRibbonHover={false}
                       groupColors={nodes.map(n => n.color)}
-                      groupLabels={nodes.map((n, idx) =>
-                        hideLabels ? idx : n.name
-                      )}
+                      groupLabels={nodes.map((n, idx) => (hideLabels ? idx : n.name))}
                       groupOnClick={this.handleChartGroupClick}
                       height={height}
                       innerRadius={innerRadius}

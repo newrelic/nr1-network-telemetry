@@ -5,12 +5,12 @@ import {
   Spinner,
   UserStorageMutation,
   UserStorageQuery,
-  nerdlet
-} from "nr1";
-import PropTypes from "prop-types";
-import React from "react";
+  nerdlet,
+} from 'nr1';
+import PropTypes from 'prop-types';
+import React from 'react';
 
-const documentId = "default-account";
+const documentId = 'default-account';
 // Account query with extra data than AccountsQuery returns
 const ACCOUNT_QUERY = `
 {
@@ -32,13 +32,13 @@ export class AccountDropdown extends React.Component {
     onSelect: PropTypes.func,
     style: PropTypes.any,
     title: PropTypes.string,
-    urlState: PropTypes.object
+    urlState: PropTypes.object,
   };
 
   static defaultProps = {
     accountFilter: account => true,
-    collection: "newrelic",
-    title: "Select account..."
+    collection: 'newrelic',
+    title: 'Select account...',
   };
 
   constructor(props) {
@@ -47,7 +47,7 @@ export class AccountDropdown extends React.Component {
     this.state = {
       accounts: null,
       defaultAccount: undefined,
-      selected: null
+      selected: null,
     };
 
     this.select = this.select.bind(this);
@@ -63,7 +63,7 @@ export class AccountDropdown extends React.Component {
         if (account) {
           return {
             selected: account,
-            selectedFromUrlState: true
+            selectedFromUrlState: true,
           };
         }
       }
@@ -74,7 +74,7 @@ export class AccountDropdown extends React.Component {
         );
         if (account) {
           return {
-            selected: account
+            selected: account,
           };
         }
       }
@@ -95,12 +95,9 @@ export class AccountDropdown extends React.Component {
           this.updateDefaultAccount(this.state.selected);
         }
 
-        if (
-          this.props.urlState &&
-          this.state.selected.id !== this.props.urlState.account
-        ) {
+        if (this.props.urlState && this.state.selected.id !== this.props.urlState.account) {
           nerdlet.setUrlState({
-            account: this.state.selected.id
+            account: this.state.selected.id,
           });
         }
       }
@@ -111,11 +108,9 @@ export class AccountDropdown extends React.Component {
     const { collection } = this.props;
 
     const result = await UserStorageQuery.query({ collection, documentId });
-    const id =
-      ((((result.data || {}).actor || {}).nerdStorage || {}).document || {})
-        .id || null;
+    const id = ((((result.data || {}).actor || {}).nerdStorage || {}).document || {}).id || null;
     this.setState(() => ({
-      defaultAccount: id
+      defaultAccount: id,
     }));
   }
 
@@ -129,7 +124,7 @@ export class AccountDropdown extends React.Component {
         accountsById: accounts.reduce((result, account) => {
           result[account.id] = account;
           return result;
-        }, {})
+        }, {}),
       },
       () => {
         this.props.onLoaded(this.state.accounts);
@@ -144,11 +139,11 @@ export class AccountDropdown extends React.Component {
       actionType: UserStorageMutation.ACTION_TYPE.WRITE_DOCUMENT,
       collection,
       document: { id: account.id },
-      documentId
+      documentId,
     });
 
     this.setState({
-      defaultAccount: account.id
+      defaultAccount: account.id,
     });
   }
 
@@ -157,7 +152,7 @@ export class AccountDropdown extends React.Component {
       if (!state.selected || state.selected.id !== account.id) {
         return {
           selected: account,
-          selectedFromUrlState: false
+          selectedFromUrlState: false,
         };
       }
 
@@ -177,11 +172,7 @@ export class AccountDropdown extends React.Component {
     const filteredAccounts = accounts.filter(accountFilter);
 
     if (accounts && filteredAccounts.length === 0) {
-      items = (
-        <DropdownItem>
-          No accounts found for this Nerdpack or for your user.
-        </DropdownItem>
-      );
+      items = <DropdownItem>No accounts found for this Nerdpack or for your user.</DropdownItem>;
     } else {
       items = filteredAccounts.map(account => (
         <DropdownItem key={account.id} onClick={() => this.select(account)}>
@@ -191,11 +182,7 @@ export class AccountDropdown extends React.Component {
     }
 
     return (
-      <Dropdown
-        className={className}
-        style={style}
-        title={(selected || {}).name || title}
-      >
+      <Dropdown className={className} style={style} title={(selected || {}).name || title}>
         {items}
       </Dropdown>
     );

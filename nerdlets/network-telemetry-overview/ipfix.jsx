@@ -5,8 +5,8 @@ import {
   INTERVAL_SECONDS_MIN,
   NRQL_IPFIX_WHERE_NO_PRIVATE_ASN,
   NRQL_QUERY_LIMIT_DEFAULT,
-  SUB_MENU_HEIGHT
-} from "./constants";
+  SUB_MENU_HEIGHT,
+} from './constants';
 
 import {
   BlockText,
@@ -18,15 +18,15 @@ import {
   RadioGroup,
   Spinner,
   Stack,
-  StackItem
-} from "nr1";
+  StackItem,
+} from 'nr1';
 
-import IpfixDetail from "./ipfix-detail";
-import NetworkSummary from "./network-summary";
-import PropTypes from "prop-types";
-import React from "react";
-import { Sankey } from "react-vis";
-import { fetchRelationshipFacets } from "./fetch";
+import IpfixDetail from './ipfix-detail';
+import NetworkSummary from './network-summary';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Sankey } from 'react-vis';
+import { fetchRelationshipFacets } from './fetch';
 
 export default class Ipfix extends React.Component {
   static propTypes = {
@@ -35,7 +35,7 @@ export default class Ipfix extends React.Component {
     hideLabels: PropTypes.bool,
     intervalSeconds: PropTypes.number,
     queryLimit: PropTypes.number,
-    width: PropTypes.number
+    width: PropTypes.number,
   };
 
   static defaultProps = {
@@ -43,7 +43,7 @@ export default class Ipfix extends React.Component {
     hideLabels: false,
     intervalSeconds: INTERVAL_SECONDS_DEFAULT,
     queryLimit: NRQL_QUERY_LIMIT_DEFAULT,
-    width: 700
+    width: 700,
   };
 
   constructor(props) {
@@ -60,14 +60,12 @@ export default class Ipfix extends React.Component {
       isLoading: true,
       links: [],
       nodes: [],
-      peerBy: "peerName",
-      width: width
+      peerBy: 'peerName',
+      width: width,
     };
 
     this.handleDetailClose = this.handleDetailClose.bind(this);
-    this.handleFilterPrivateAsnsChange = this.handleFilterPrivateAsnsChange.bind(
-      this
-    );
+    this.handleFilterPrivateAsnsChange = this.handleFilterPrivateAsnsChange.bind(this);
     this.handlePeerByChange = this.handlePeerByChange.bind(this);
     this.handleSankeyLinkClick = this.handleSankeyLinkClick.bind(this);
   }
@@ -89,10 +87,7 @@ export default class Ipfix extends React.Component {
       this.resetTimer();
     }
 
-    if (
-      this.graphContainer &&
-      this.graphContainer.clientWidth !== prevState.width
-    ) {
+    if (this.graphContainer && this.graphContainer.clientWidth !== prevState.width) {
       const width = this.graphContainer.clientWidth;
       this.setState({ width });
     }
@@ -151,16 +146,16 @@ export default class Ipfix extends React.Component {
     const { filterPrivateAsns, peerBy } = this.state;
 
     return (
-      "FROM ipfix" +
+      'FROM ipfix' +
       " SELECT sum(octetDeltaCount * 64000) as 'value'" +
-      (filterPrivateAsns ? NRQL_IPFIX_WHERE_NO_PRIVATE_ASN : "") +
-      " FACET " +
+      (filterPrivateAsns ? NRQL_IPFIX_WHERE_NO_PRIVATE_ASN : '') +
+      ' FACET ' +
       peerBy +
-      ", agent, destinationIPv4Address" +
-      " SINCE " +
+      ', agent, destinationIPv4Address' +
+      ' SINCE ' +
       intervalSeconds +
-      " seconds ago" +
-      " LIMIT " +
+      ' seconds ago' +
+      ' LIMIT ' +
       queryLimit
     );
   }
@@ -171,15 +166,12 @@ export default class Ipfix extends React.Component {
 
     if (!account || !account.id) return;
 
-    const { nodes, links } = await fetchRelationshipFacets(
-      account.id,
-      this.createNrqlQuery()
-    );
+    const { nodes, links } = await fetchRelationshipFacets(account.id, this.createNrqlQuery());
 
     this.setState({
       isLoading: false,
       links,
-      nodes
+      nodes,
     });
   }
 
@@ -189,33 +181,22 @@ export default class Ipfix extends React.Component {
   renderDetailCard() {
     const account = this.props.account || {};
     const { hideLabels } = this.props;
-    const {
-      detailData,
-      detailHidden,
-      filterPrivateAsns,
-      nodes,
-      peerBy
-    } = this.state;
+    const { detailData, detailHidden, filterPrivateAsns, nodes, peerBy } = this.state;
 
     if (!account || !detailData || detailHidden) return;
 
-    let peerName = (nodes[detailData.sourceId] || {}).name || "";
+    let peerName = (nodes[detailData.sourceId] || {}).name || '';
     let filter =
-      (filterPrivateAsns
-        ? `${NRQL_IPFIX_WHERE_NO_PRIVATE_ASN} AND `
-        : "WHERE ") +
-      peerBy +
-      " = ";
-    if (peerBy === "bgpSourceAsNumber") {
+      (filterPrivateAsns ? `${NRQL_IPFIX_WHERE_NO_PRIVATE_ASN} AND ` : 'WHERE ') + peerBy + ' = ';
+    if (peerBy === 'bgpSourceAsNumber') {
       filter += peerName;
     } else {
       filter += "'" + peerName + "'";
     }
 
     if ((detailData.source || {}).depth === 1) {
-      filter +=
-        " AND destinationIPv4Address = '" + detailData.target.name + "'";
-      peerName += " to " + detailData.target.name;
+      filter += " AND destinationIPv4Address = '" + detailData.target.name + "'";
+      peerName += ' to ' + detailData.target.name;
     }
 
     return (
@@ -234,26 +215,26 @@ export default class Ipfix extends React.Component {
     const { filterPrivateAsns, peerBy } = this.state;
 
     return (
-      <div className="top-menu">
+      <div className='top-menu'>
         <div>
           <BlockText type={BlockText.TYPE.NORMAL}>
             <strong>Show peers by...</strong>
           </BlockText>
           <RadioGroup
-            className="horizontal-radio-group"
+            className='horizontal-radio-group'
             onChange={this.handlePeerByChange}
             value={peerBy}
           >
-            <Radio label="Peer Name" value="peerName" />
-            <Radio label="AS Number" value="bgpSourceAsNumber" />
+            <Radio label='Peer Name' value='peerName' />
+            <Radio label='AS Number' value='bgpSourceAsNumber' />
           </RadioGroup>
         </div>
 
         <div>
           <Checkbox
             checked={filterPrivateAsns}
-            className="checkbox"
-            label="Filter Private ASNs"
+            className='checkbox'
+            label='Filter Private ASNs'
             onChange={this.handleFilterPrivateAsnsChange}
           />
         </div>
@@ -280,7 +261,7 @@ export default class Ipfix extends React.Component {
           // let's recurse
           const myLinks = [
             ...((activeLink.source || {}).targetLinks || []),
-            ...((activeLink.target || {}).sourceLinks || [])
+            ...((activeLink.target || {}).sourceLinks || []),
           ];
           if (myLinks) {
             myLinks.forEach(t => {
@@ -294,14 +275,12 @@ export default class Ipfix extends React.Component {
       return { ...link, opacity };
     });
 
-    const renderNodes = hideLabels
-      ? nodes.map((n, idx) => ({ ...n, name: `${idx}` }))
-      : nodes;
+    const renderNodes = hideLabels ? nodes.map((n, idx) => ({ ...n, name: `${idx}` })) : nodes;
 
     return (
-      <div className="background">
+      <div className='background'>
         {this.renderDetailCard()}
-        <Grid className="fullheight">
+        <Grid className='fullheight'>
           <GridItem columnSpan={8}>
             <Stack
               directionType={Stack.DIRECTION_TYPE.VERTICAL}
@@ -310,13 +289,13 @@ export default class Ipfix extends React.Component {
               horizontalType={Stack.HORIZONTAL_TYPE.FILL}
             >
               <StackItem>
-                <div className="sub-menu" style={{ height: SUB_MENU_HEIGHT }}>
+                <div className='sub-menu' style={{ height: SUB_MENU_HEIGHT }}>
                   {this.renderSubMenu()}
                 </div>
               </StackItem>
               <StackItem>
                 <div
-                  className="main-container"
+                  className='main-container'
                   ref={graphContainer => {
                     this.graphContainer = graphContainer;
                   }}
@@ -329,34 +308,34 @@ export default class Ipfix extends React.Component {
                     <div>
                       <div
                         style={{
-                          display: "flex",
-                          height: "20px",
-                          margin: "5px"
+                          display: 'flex',
+                          height: '20px',
+                          margin: '5px',
                         }}
                       >
                         <div
                           style={{
-                            fontWeight: "600",
-                            textAlign: "left",
-                            width: "33%"
+                            fontWeight: '600',
+                            textAlign: 'left',
+                            width: '33%',
                           }}
                         >
                           Source
                         </div>
                         <div
                           style={{
-                            fontWeight: "600",
-                            textAlign: "center",
-                            width: "34%"
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            width: '34%',
                           }}
                         >
                           Router
                         </div>
                         <div
                           style={{
-                            fontWeight: "600",
-                            textAlign: "right",
-                            width: "33%"
+                            fontWeight: '600',
+                            textAlign: 'right',
+                            width: '33%',
                           }}
                         >
                           Destination
@@ -367,12 +346,8 @@ export default class Ipfix extends React.Component {
                         links={renderLinks}
                         nodes={renderNodes}
                         onLinkClick={this.handleSankeyLinkClick}
-                        onLinkMouseOut={() =>
-                          this.setState({ activeLink: null })
-                        }
-                        onLinkMouseOver={node =>
-                          this.setState({ activeLink: node })
-                        }
+                        onLinkMouseOut={() => this.setState({ activeLink: null })}
+                        onLinkMouseOver={node => this.setState({ activeLink: node })}
                         width={width}
                       />
                     </div>
@@ -384,8 +359,8 @@ export default class Ipfix extends React.Component {
           <GridItem columnSpan={4}>
             <NetworkSummary
               data={renderNodes}
-              deviceName={"All Peers"}
-              deviceType={"Network entity"}
+              deviceName={'All Peers'}
+              deviceType={'Network entity'}
               height={height}
               hideLabels={hideLabels}
             />
