@@ -4,15 +4,18 @@ import {
   HeadingText,
   Icon,
   NerdletStateContext,
+  PlatformStateContext,
   Spinner,
-  nerdlet
+  nerdlet,
 } from "nr1";
 import {
   DATA_SOURCES,
+  INTERVAL_SECONDS_DEFAULT,
+  NRQL_QUERY_LIMIT_DEFAULT,
   NRQL_QUERY_LIMIT_MAX,
   NRQL_QUERY_LIMIT_MIN,
 } from "./constants";
-import MainMenu from './MainMenu';
+import MainMenu from "./MainMenu";
 
 import React from "react";
 
@@ -57,9 +60,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <Grid className='fullheight'>
           <GridItem columnSpan={2}>
             <NerdletStateContext.Consumer>
-              { nerdletUrlState => (
-                <MainMenu nerdletUrlState={nerdletUrlState} onAccountChange={account => this.setState({ account, isLoading: false })} />
-              ) }
+              {nerdletUrlState => (
+                <MainMenu
+                  nerdletUrlState={nerdletUrlState}
+                  onAccountChange={account => this.setState({ account, isLoading: false })}
+                />
+              )}
             </NerdletStateContext.Consumer>
           </GridItem>
           <GridItem columnSpan={10}>
@@ -79,13 +85,33 @@ export default class NetworkTelemetryNerdlet extends React.Component {
                   <Spinner fillContainer />
                 )
               ) : (
-                <NerdletStateContext.Consumer>
-                  {nerdletUrlState => {
-                    const DsComponent = (DATA_SOURCES[nerdletUrlState.dataSource] || {}).component;
-                    return <DsComponent />
-                  }
-                  }
-                </NerdletStateContext.Consumer>
+                <PlatformStateContext.Consumer>
+                  {platformUrlState => {
+                    const { timeRange } = platformUrlState;
+                    return (
+                      <NerdletStateContext.Consumer>
+                        {nerdletUrlState => {
+                          const {
+                            dataSource = 0,
+                            hideLabels = false,
+                            intervalSeconds,
+                            queryLimit,
+                          } = nerdletUrlState;
+                          const DsComponent = (DATA_SOURCES[dataSource] || {}).component;
+                          return (
+                            <DsComponent
+                              account={account}
+                              hideLabels={hideLabels}
+                              intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
+                              queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
+                              timeRange={timeRange}
+                            />
+                          );
+                        }}
+                      </NerdletStateContext.Consumer>
+                    );
+                  }}
+                </PlatformStateContext.Consumer>
               )}
             </div>
           </GridItem>

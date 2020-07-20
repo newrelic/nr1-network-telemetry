@@ -5,8 +5,8 @@ import {
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
   INTERVAL_SECONDS_MIN,
-  NRQL_QUERY_LIMIT_DEFAULT
-} from './constants';
+  NRQL_QUERY_LIMIT_DEFAULT,
+} from "./constants";
 import InputRange from "react-input-range";
 import PropTypes from "prop-types";
 import React from "react";
@@ -15,8 +15,8 @@ import debounce from "lodash/debounce";
 export default class MainMenu extends React.Component {
   static propTypes = {
     nerdletUrlState: PropTypes.object,
-    onAccountChange: PropTypes.func
-  }
+    onAccountChange: PropTypes.func,
+  };
 
   constructor(props) {
     super();
@@ -26,7 +26,7 @@ export default class MainMenu extends React.Component {
     this.state = {
       intervalSlider: intervalSeconds,
       isLoading: true,
-    }
+    };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
   }
@@ -37,7 +37,7 @@ export default class MainMenu extends React.Component {
     if (dataSource >= 0) {
       nerdlet.setUrlState({ dataSource });
     }
-  }
+  };
 
   handleIntervalSecondsChange = debounce(value => {
     const intervalSeconds = value || INTERVAL_SECONDS_DEFAULT;
@@ -58,7 +58,7 @@ export default class MainMenu extends React.Component {
     const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
     const hideLabels = this.props.nerdletUrlState.hideLabels || false;
     const { intervalSlider } = this.state;
-  
+
     return (
       <div className='side-menu'>
         <BlockText type={BlockText.TYPE.NORMAL}>
@@ -73,13 +73,16 @@ export default class MainMenu extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
         </BlockText>
-        <RadioGroup onChange={() => this.handleDataSourceChange(dataSource)} value={`${dataSource}`}>
+        <RadioGroup
+          onChange={() => this.handleDataSourceChange(dataSource)}
+          value={`${dataSource}`}
+        >
           {DATA_SOURCES.map((v, i) => (
             <Radio key={i} label={v.name} value={`${i}`} />
           ))}
         </RadioGroup>
         <br />
-  
+
         <Checkbox
           checked={hideLabels}
           className='checkbox'
@@ -88,7 +91,7 @@ export default class MainMenu extends React.Component {
         />
         <br />
         <br />
-  
+
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Limit results to about...</strong>
         </BlockText>
