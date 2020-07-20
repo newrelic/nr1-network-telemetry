@@ -1,7 +1,6 @@
-import { AutoSizer, NerdletStateContext, PlatformStateContext } from "nr1";
-
-import NetworkTelemetryNerdlet from "./network-telemetry-nerdlet";
-import React from "react";
+import { AutoSizer, NerdletStateContext, PlatformStateContext } from 'nr1';
+import NetworkTelemetryNerdlet from './network-telemetry-nerdlet';
+import React from 'react';
 
 export default class Wrapper extends React.PureComponent {
   render() {

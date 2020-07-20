@@ -1,4 +1,4 @@
-import { NerdGraphQuery } from "nr1";
+import { NerdGraphQuery } from 'nr1';
 
 /**
  * For building account pickers, etc. Get the list of all visible accounts that have

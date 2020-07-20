@@ -5,15 +5,15 @@ import {
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
   SUB_MENU_HEIGHT,
-} from "./constants";
-import { BlockText, Grid, GridItem, Radio, RadioGroup, Spinner, Stack, StackItem } from "nr1";
+} from './constants';
+import { BlockText, Grid, GridItem, Radio, RadioGroup, Spinner, Stack, StackItem } from 'nr1';
 
-import ChordDiagram from "react-chord-diagram";
-import NetworkSummary from "./network-summary";
-import PropTypes from "prop-types";
-import React from "react";
-import { fetchRelationshipFacets } from "./fetch";
-import { timeRangeToNrql } from "../../src/components/time-range";
+import ChordDiagram from 'react-chord-diagram';
+import NetworkSummary from './network-summary';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { fetchRelationshipFacets } from './fetch';
+import { timeRangeToNrql } from '../../src/components/time-range';
 
 export default class Sflow extends React.Component {
   static propTypes = {
@@ -44,7 +44,7 @@ export default class Sflow extends React.Component {
       isLoading: true,
       links: [],
       nodes: [],
-      queryAttribute: "throughput",
+      queryAttribute: 'throughput',
       selectedSourceId: -1,
       width: width,
     };
@@ -127,26 +127,26 @@ export default class Sflow extends React.Component {
     const { queryLimit } = this.props;
     const { queryAttribute } = this.state;
 
-    let attr = "sum(scaledByteCount * 8)";
-    if (queryAttribute === "count") {
-      attr = "count(*)";
+    let attr = 'sum(scaledByteCount * 8)';
+    if (queryAttribute === 'count') {
+      attr = 'count(*)';
     }
 
     return (
-      "FROM sflow" +
-      " SELECT " +
+      'FROM sflow' +
+      ' SELECT ' +
       attr +
       " as 'value'" +
-      " FACET networkSourceAddress, networkDestinationAddress" +
-      " LIMIT " +
+      ' FACET networkSourceAddress, networkDestinationAddress' +
+      ' LIMIT ' +
       queryLimit +
-      " " +
+      ' ' +
       timeRangeToNrql(this.props.timeRange)
     );
   }
 
   handleAttributeChange(evt, attr) {
-    if (attr === "count" || attr === "throughput") {
+    if (attr === 'count' || attr === 'throughput') {
       this.setState({ queryAttribute: attr });
     }
   }
@@ -201,10 +201,10 @@ export default class Sflow extends React.Component {
     links.forEach(link => (matrix[link.source][link.target] = link.value));
 
     const summaryColumns = [
-      { align: "center", data: "color", label: null },
-      { align: "left", data: "source", label: "source" },
-      { align: "left", data: "target", label: "target" },
-      { align: "right", data: "value", label: queryAttribute },
+      { align: 'center', data: 'color', label: null },
+      { align: 'left', data: 'source', label: 'source' },
+      { align: 'left', data: 'target', label: 'target' },
+      { align: 'right', data: 'value', label: queryAttribute },
     ];
 
     const summaryData = links
