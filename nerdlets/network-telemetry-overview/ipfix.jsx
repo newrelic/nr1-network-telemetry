@@ -6,7 +6,7 @@ import {
   NRQL_IPFIX_WHERE_NO_PRIVATE_ASN,
   NRQL_QUERY_LIMIT_DEFAULT,
   SUB_MENU_HEIGHT,
-} from "./constants";
+} from './constants';
 
 import {
   BlockText,
@@ -19,14 +19,14 @@ import {
   Spinner,
   Stack,
   StackItem,
-} from "nr1";
+} from 'nr1';
 
-import IpfixDetail from "./ipfix-detail";
-import NetworkSummary from "./network-summary";
-import PropTypes from "prop-types";
-import React from "react";
-import { Sankey } from "react-vis";
-import { fetchRelationshipFacets } from "./fetch";
+import IpfixDetail from './ipfix-detail';
+import NetworkSummary from './network-summary';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Sankey } from 'react-vis';
+import { fetchRelationshipFacets } from './fetch';
 
 export default class Ipfix extends React.Component {
   static propTypes = {
@@ -60,7 +60,7 @@ export default class Ipfix extends React.Component {
       isLoading: true,
       links: [],
       nodes: [],
-      peerBy: "peerName",
+      peerBy: 'peerName',
       width: width,
     };
 
@@ -97,14 +97,10 @@ export default class Ipfix extends React.Component {
     this.stopTimer();
   }
 
-  /*
-   * Timer
-   */
   startTimer() {
     const { intervalSeconds } = this.props || INTERVAL_SECONDS_DEFAULT;
 
     if (intervalSeconds >= INTERVAL_SECONDS_MIN) {
-      // Fire right away, then schedule
       this.fetchIpfixData();
 
       this.refresh = setInterval(async () => {
@@ -123,9 +119,6 @@ export default class Ipfix extends React.Component {
     this.startTimer();
   }
 
-  /*
-   * Helper functions
-   */
   handleSankeyLinkClick(detailData, evt) {
     this.setState({ detailData, detailHidden: false });
   }
@@ -153,16 +146,16 @@ export default class Ipfix extends React.Component {
     const { filterPrivateAsns, peerBy } = this.state;
 
     return (
-      "FROM ipfix" +
+      'FROM ipfix' +
       " SELECT sum(octetDeltaCount * 64000) as 'value'" +
-      (filterPrivateAsns ? NRQL_IPFIX_WHERE_NO_PRIVATE_ASN : "") +
-      " FACET " +
+      (filterPrivateAsns ? NRQL_IPFIX_WHERE_NO_PRIVATE_ASN : '') +
+      ' FACET ' +
       peerBy +
-      ", agent, destinationIPv4Address" +
-      " SINCE " +
+      ', agent, destinationIPv4Address' +
+      ' SINCE ' +
       intervalSeconds +
-      " seconds ago" +
-      " LIMIT " +
+      ' seconds ago' +
+      ' LIMIT ' +
       queryLimit
     );
   }
@@ -192,10 +185,10 @@ export default class Ipfix extends React.Component {
 
     if (!account || !detailData || detailHidden) return;
 
-    let peerName = (nodes[detailData.sourceId] || {}).name || "";
+    let peerName = (nodes[detailData.sourceId] || {}).name || '';
     let filter =
-      (filterPrivateAsns ? `${NRQL_IPFIX_WHERE_NO_PRIVATE_ASN} AND ` : "WHERE ") + peerBy + " = ";
-    if (peerBy === "bgpSourceAsNumber") {
+      (filterPrivateAsns ? `${NRQL_IPFIX_WHERE_NO_PRIVATE_ASN} AND ` : 'WHERE ') + peerBy + ' = ';
+    if (peerBy === 'bgpSourceAsNumber') {
       filter += peerName;
     } else {
       filter += "'" + peerName + "'";
@@ -203,7 +196,7 @@ export default class Ipfix extends React.Component {
 
     if ((detailData.source || {}).depth === 1) {
       filter += " AND destinationIPv4Address = '" + detailData.target.name + "'";
-      peerName += " to " + detailData.target.name;
+      peerName += ' to ' + detailData.target.name;
     }
 
     return (
@@ -313,14 +306,38 @@ export default class Ipfix extends React.Component {
                     <div>No results found</div>
                   ) : (
                     <div>
-                      <div style={{ display: "flex", height: "20px", margin: "5px" }}>
-                        <div style={{ fontWeight: "600", textAlign: "left", width: "33%" }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          height: '20px',
+                          margin: '5px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontWeight: '600',
+                            textAlign: 'left',
+                            width: '33%',
+                          }}
+                        >
                           Source
                         </div>
-                        <div style={{ fontWeight: "600", textAlign: "center", width: "34%" }}>
+                        <div
+                          style={{
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            width: '34%',
+                          }}
+                        >
                           Router
                         </div>
-                        <div style={{ fontWeight: "600", textAlign: "right", width: "33%" }}>
+                        <div
+                          style={{
+                            fontWeight: '600',
+                            textAlign: 'right',
+                            width: '33%',
+                          }}
+                        >
                           Destination
                         </div>
                       </div>
@@ -342,8 +359,8 @@ export default class Ipfix extends React.Component {
           <GridItem columnSpan={4}>
             <NetworkSummary
               data={renderNodes}
-              deviceName={"All Peers"}
-              deviceType={"Network entity"}
+              deviceName={'All Peers'}
+              deviceType={'Network entity'}
               height={height}
               hideLabels={hideLabels}
             />

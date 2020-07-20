@@ -6,11 +6,11 @@ import {
   UserStorageMutation,
   UserStorageQuery,
   nerdlet,
-} from "nr1";
-import PropTypes from "prop-types";
-import React from "react";
+} from 'nr1';
+import PropTypes from 'prop-types';
+import React from 'react';
 
-const documentId = "default-account";
+const documentId = 'default-account';
 // Account query with extra data than AccountsQuery returns
 const ACCOUNT_QUERY = `
 {
@@ -28,6 +28,7 @@ export class AccountDropdown extends React.Component {
     accountFilter: PropTypes.func,
     className: PropTypes.any,
     collection: PropTypes.string,
+    onLoaded: PropTypes.func,
     onSelect: PropTypes.func,
     style: PropTypes.any,
     title: PropTypes.string,
@@ -36,8 +37,8 @@ export class AccountDropdown extends React.Component {
 
   static defaultProps = {
     accountFilter: account => true,
-    collection: "newrelic",
-    title: "Select account...",
+    collection: 'newrelic',
+    title: 'Select account...',
   };
 
   constructor(props) {
@@ -117,13 +118,18 @@ export class AccountDropdown extends React.Component {
     const result = await NerdGraphQuery.query({ query: ACCOUNT_QUERY });
     const accounts = (((result || {}).data || {}).actor || {}).accounts || [];
 
-    this.setState({
-      accounts,
-      accountsById: accounts.reduce((result, account) => {
-        result[account.id] = account;
-        return result;
-      }, {}),
-    });
+    this.setState(
+      {
+        accounts,
+        accountsById: accounts.reduce((result, account) => {
+          result[account.id] = account;
+          return result;
+        }, {}),
+      },
+      () => {
+        this.props.onLoaded(this.state.accounts);
+      }
+    );
   }
 
   async updateDefaultAccount(account) {
@@ -157,16 +163,23 @@ export class AccountDropdown extends React.Component {
   render() {
     const { accountFilter, className, style, title } = this.props;
     const { accounts, defaultAccount, selected } = this.state;
+    let items;
 
     if (!accounts || defaultAccount === undefined) {
       return <Spinner fillcontainer />;
     }
 
-    const items = accounts.filter(accountFilter).map(account => (
-      <DropdownItem key={account.id} onClick={() => this.select(account)}>
-        {account.name}
-      </DropdownItem>
-    ));
+    const filteredAccounts = accounts.filter(accountFilter);
+
+    if (accounts && filteredAccounts.length === 0) {
+      items = <DropdownItem>No accounts found for this Nerdpack or for your user.</DropdownItem>;
+    } else {
+      items = filteredAccounts.map(account => (
+        <DropdownItem key={account.id} onClick={() => this.select(account)}>
+          {account.name}
+        </DropdownItem>
+      ));
+    }
 
     return (
       <Dropdown className={className} style={style} title={(selected || {}).name || title}>

@@ -1,9 +1,9 @@
-import { Toast, navigation } from "nr1";
-import PropTypes from "prop-types";
-import React from "react";
+import { Toast, navigation } from 'nr1';
+import PropTypes from 'prop-types';
+import React from 'react';
 
-import findRelatedAccountsWith from "../../src/lib/find-related-account-with";
-import nrdbQuery from "../../src/lib/nrdb-query";
+import findRelatedAccountsWith from '../../src/lib/find-related-account-with';
+import nrdbQuery from '../../src/lib/nrdb-query';
 
 /**
  * render an ip address that on click will attempt to find the
@@ -30,11 +30,14 @@ export default class IpAddress extends React.Component {
     const where = `ipV4Address LIKE '${ipAddress}/%'`;
     const notFoundToast = {
       description: `Could not find ${ipAddress} on any monitored hosts.`,
-      title: "IP Address Not Found",
+      title: 'IP Address Not Found',
       type: Toast.TYPE.NORMAL,
     };
 
-    const accounts = await findRelatedAccountsWith({ eventType: "NetworkSample", where });
+    const accounts = await findRelatedAccountsWith({
+      eventType: 'NetworkSample',
+      where,
+    });
     if (accounts.length === 0) {
       Toast.showToast(notFoundToast);
     } else {
@@ -52,7 +55,7 @@ export default class IpAddress extends React.Component {
 
   render() {
     const { searching } = this.state || {};
-    const className = searching ? "ip-address-searching" : "ip-address";
+    const className = searching ? 'ip-address-searching' : 'ip-address';
     return (
       <div
         className={className}
@@ -61,7 +64,7 @@ export default class IpAddress extends React.Component {
         role='button'
         tabIndex={0}
       >
-        {this.props.value || "(unknown)"}
+        {this.props.value || '(unknown)'}
       </div>
     );
   }

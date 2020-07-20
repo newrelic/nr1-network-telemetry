@@ -1,16 +1,18 @@
-import { BlockText, Checkbox, Radio, RadioGroup, nerdlet } from "nr1";
-import { AccountDropdown } from "../../src/components/account-dropdown";
+import { BlockText, Checkbox, Radio, RadioGroup, nerdlet } from 'nr1';
+import { AccountDropdown } from '../../src/components/account-dropdown';
 import {
   DATA_SOURCES,
   INTERVAL_SECONDS_DEFAULT,
   INTERVAL_SECONDS_MAX,
   INTERVAL_SECONDS_MIN,
   NRQL_QUERY_LIMIT_DEFAULT,
-} from "./constants";
-import InputRange from "react-input-range";
-import PropTypes from "prop-types";
-import React from "react";
-import debounce from "lodash/debounce";
+  NRQL_QUERY_LIMIT_MAX,
+  NRQL_QUERY_LIMIT_MIN,
+} from './constants';
+import InputRange from 'react-input-range';
+import PropTypes from 'prop-types';
+import React from 'react';
+import debounce from 'lodash/debounce';
 
 export default class MainMenu extends React.Component {
   static propTypes = {
@@ -33,10 +35,7 @@ export default class MainMenu extends React.Component {
 
   handleDataSourceChange = value => {
     const dataSource = parseInt(value, 10);
-
-    if (dataSource >= 0) {
-      nerdlet.setUrlState({ dataSource });
-    }
+    nerdlet.setUrlState({ dataSource });
   };
 
   handleIntervalSecondsChange = debounce(value => {
@@ -53,6 +52,20 @@ export default class MainMenu extends React.Component {
     }
   }
 
+  handleLimitChange(evt, value) {
+    const queryLimit = parseInt(value, 10);
+
+    if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
+      nerdlet.setUrlState({ queryLimit });
+    }
+  }
+
+  handleHideLabelsChange(evt) {
+    const hideLabels = ((evt || {}).target || {}).checked || false;
+
+    nerdlet.setUrlState({ hideLabels });
+  }
+
   render() {
     const dataSource = this.props.nerdletUrlState.dataSource || 0;
     const queryLimit = this.props.nerdletUrlState.queryLimit || NRQL_QUERY_LIMIT_DEFAULT;
@@ -67,6 +80,7 @@ export default class MainMenu extends React.Component {
         <AccountDropdown
           accountFilter={this.accountFilter}
           className='account-dropdown'
+          onLoaded={this.handleAccountChange}
           onSelect={this.handleAccountChange}
           urlState={this.props.nerdletUrlState}
         />

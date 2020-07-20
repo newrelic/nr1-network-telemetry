@@ -6,18 +6,12 @@ import {
   NerdletStateContext,
   PlatformStateContext,
   Spinner,
-  nerdlet,
-} from "nr1";
-import {
-  DATA_SOURCES,
-  INTERVAL_SECONDS_DEFAULT,
-  NRQL_QUERY_LIMIT_DEFAULT,
-  NRQL_QUERY_LIMIT_MAX,
-  NRQL_QUERY_LIMIT_MIN,
-} from "./constants";
-import MainMenu from "./MainMenu";
+} from 'nr1';
+import { EmptyState } from '@newrelic/nr1-community';
+import { DATA_SOURCES, INTERVAL_SECONDS_DEFAULT, NRQL_QUERY_LIMIT_DEFAULT } from './constants';
+import MainMenu from './MainMenu';
 
-import React from "react";
+import React from 'react';
 
 export default class NetworkTelemetryNerdlet extends React.Component {
   constructor(props) {
@@ -25,26 +19,16 @@ export default class NetworkTelemetryNerdlet extends React.Component {
 
     this.state = {
       account: {},
+      accountsList: [],
       isLoading: true,
     };
-
-    this.handleLimitChange = this.handleLimitChange.bind(this);
-    this.handleHideLabelsChange = this.handleHideLabelsChange.bind(this);
   }
 
-  handleLimitChange(evt, value) {
-    const queryLimit = parseInt(value, 10);
-
-    if (queryLimit >= NRQL_QUERY_LIMIT_MIN && queryLimit <= NRQL_QUERY_LIMIT_MAX) {
-      nerdlet.setUrlState({ queryLimit });
+  handleAccountsLoaded = accountsList => {
+    if (accountsList && accountsList.length < 0) {
+      this.setState({ accountsList });
     }
-  }
-
-  handleHideLabelsChange(evt) {
-    const hideLabels = ((evt || {}).target || {}).checked || false;
-
-    nerdlet.setUrlState({ hideLabels });
-  }
+  };
 
   accountFilter(account) {
     return DATA_SOURCES.reduce((found, source) => {
@@ -52,8 +36,64 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }, false);
   }
 
+  renderSelectAccountAlert = () => {
+    return (
+      <div className='select-account'>
+        <HeadingText type={HeadingText.TYPE.HEADING_1}>
+          <Icon sizeType={Icon.SIZE_TYPE.LARGE} type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT} />
+          Please Select an Account
+        </HeadingText>
+      </div>
+    );
+  };
+
+  renderDSComponent = () => {
+    const { account } = this.state;
+    return (
+      <PlatformStateContext.Consumer>
+        {platformUrlState => {
+          const { timeRange } = platformUrlState;
+          return (
+            <NerdletStateContext.Consumer>
+              {nerdletUrlState => {
+                const {
+                  dataSource = 0,
+                  hideLabels = false,
+                  intervalSeconds,
+                  queryLimit,
+                } = nerdletUrlState;
+                const DsComponent = (DATA_SOURCES[dataSource] || {}).component;
+                return (
+                  <DsComponent
+                    account={account}
+                    hideLabels={hideLabels}
+                    intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
+                    queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
+                    timeRange={timeRange}
+                  />
+                );
+              }}
+            </NerdletStateContext.Consumer>
+          );
+        }}
+      </PlatformStateContext.Consumer>
+    );
+  };
+
+  renderAccountsListError = () => {
+    return (
+      <EmptyState
+        buttonText=''
+        description={
+          'No accounts found for this Nerdpack or for your user. See your Nerdpack Manager with concerns.'
+        }
+        heading={'No Accounts Found'}
+      />
+    );
+  };
+
   render() {
-    const { account, isLoading } = this.state;
+    const { account, isLoading, accountsList } = this.state;
 
     return (
       <div className='background'>
@@ -70,49 +110,10 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           </GridItem>
           <GridItem columnSpan={10}>
             <div className='main-container'>
-              {isLoading ? (
-                !account.id ? (
-                  <div className='select-account'>
-                    <HeadingText type={HeadingText.TYPE.HEADING_1}>
-                      <Icon
-                        sizeType={Icon.SIZE_TYPE.LARGE}
-                        type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT}
-                      />
-                      Please Select an Account
-                    </HeadingText>
-                  </div>
-                ) : (
-                  <Spinner fillContainer />
-                )
-              ) : (
-                <PlatformStateContext.Consumer>
-                  {platformUrlState => {
-                    const { timeRange } = platformUrlState;
-                    return (
-                      <NerdletStateContext.Consumer>
-                        {nerdletUrlState => {
-                          const {
-                            dataSource = 0,
-                            hideLabels = false,
-                            intervalSeconds,
-                            queryLimit,
-                          } = nerdletUrlState;
-                          const DsComponent = (DATA_SOURCES[dataSource] || {}).component;
-                          return (
-                            <DsComponent
-                              account={account}
-                              hideLabels={hideLabels}
-                              intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
-                              queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
-                              timeRange={timeRange}
-                            />
-                          );
-                        }}
-                      </NerdletStateContext.Consumer>
-                    );
-                  }}
-                </PlatformStateContext.Consumer>
-              )}
+              {isLoading && account.id && <Spinner fillContainer />}
+              {!account.id && accountsList.length > 0 && this.renderSelectAccountAlert()}
+              {!account.id && accountsList.length === 0 && this.renderAccountsListError()}
+              {!isLoading && account.id && this.renderDSComponent()}
             </div>
           </GridItem>
         </Grid>

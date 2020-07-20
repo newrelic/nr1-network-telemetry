@@ -1,5 +1,5 @@
-import accountsWithData from "./accounts-with-data";
-import nrdbQuery from "./nrdb-query";
+import accountsWithData from './accounts-with-data';
+import nrdbQuery from './nrdb-query';
 
 /**
  * look across all the accounts the user has access to, scoped to the provided
@@ -14,7 +14,7 @@ import nrdbQuery from "./nrdb-query";
  * and return the array of accounts, each with a hit count in descending order.
  */
 export default async function findRelatedAccountsWith({ eventType, where, timeWindow }) {
-  timeWindow = timeWindow || "SINCE 2 minutes ago";
+  timeWindow = timeWindow || 'SINCE 2 minutes ago';
 
   const accounts = await accountsWithData(eventType);
   const nrql = `SELECT count(*) FROM ${eventType} WHERE ${where} ${timeWindow}`;

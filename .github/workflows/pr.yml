@@ -73,7 +73,7 @@ jobs:
       - name: Run eslint-check and generate report
         id: eslint-check
         run: |
-          npm run eslint-check -- --output-file eslint_report.json --format json
+          npm run eslint-check
         continue-on-error: true
 
       - name: Annotate Lint Results

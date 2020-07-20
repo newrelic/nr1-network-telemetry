@@ -1,5 +1,5 @@
-import { COLORS } from "./constants";
-import { fetchNrqlResults } from "../../src/lib/nrql";
+import { COLORS } from './constants';
+import { fetchNrqlResults } from '../../src/lib/nrql';
 
 /*
  * Fetch some node /link stuff via NRQL
@@ -17,7 +17,13 @@ export const fetchRelationshipFacets = async (accountId, nrqlQuery) => {
       const ids = (row.facet || []).map(f => {
         const id = nodes.findIndex(node => node.name === f);
         if (id < 0)
-          return nodes.push({ color: COLORS[nodes.length % COLORS.length], name: f, value: 0 }) - 1;
+          return (
+            nodes.push({
+              color: COLORS[nodes.length % COLORS.length],
+              name: f,
+              value: 0,
+            }) - 1
+          );
 
         return id;
       });
