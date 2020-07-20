@@ -30,6 +30,12 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     }
   };
 
+  handleAccountsLoaded = accountsList => {
+    if (accountsList && accountsList.length < 0) {
+      this.setState({ accountsList });
+    }
+  };
+
   accountFilter(account) {
     return DATA_SOURCES.reduce((found, source) => {
       return found || account.reportingEventTypes.includes(source.eventType);
@@ -77,6 +83,18 @@ export default class NetworkTelemetryNerdlet extends React.Component {
           );
         }}
       </PlatformStateContext.Consumer>
+    );
+  };
+
+  renderAccountsListError = () => {
+    return (
+      <EmptyState
+        buttonText=''
+        description={
+          'No accounts found for this Nerdpack or for your user. See your Nerdpack Manager with concerns.'
+        }
+        heading={'No Accounts Found'}
+      />
     );
   };
 
