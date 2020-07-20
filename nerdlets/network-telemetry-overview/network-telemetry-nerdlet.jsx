@@ -5,10 +5,11 @@ import {
   GridItem,
   HeadingText,
   Icon,
+  NerdletStateContext,
   Radio,
   RadioGroup,
   Spinner,
-  nerdlet,
+  nerdlet
 } from "nr1";
 import {
   INTERVAL_SECONDS_DEFAULT,
@@ -34,10 +35,8 @@ const DATA_SOURCES = [
 
 export default class NetworkTelemetryNerdlet extends React.Component {
   static propTypes = {
-    height: PropTypes.number,
     launcherUrlState: PropTypes.object,
     nerdletUrlState: PropTypes.object,
-    width: PropTypes.number,
   };
 
   constructor(props) {
@@ -52,7 +51,6 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     };
 
     this.handleAccountChange = this.handleAccountChange.bind(this);
-    this.handleDataSourceChange = this.handleDataSourceChange.bind(this);
     this.handleIntervalSecondsChange = this.handleIntervalSecondsChange.bind(this);
     this.handleLimitChange = this.handleLimitChange.bind(this);
     this.handleHideLabelsChange = this.handleHideLabelsChange.bind(this);
@@ -61,7 +59,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   /*
    * Helper functions
    */
-  handleDataSourceChange(evt, value) {
+  handleDataSourceChange = value => {
     const dataSource = parseInt(value, 10);
 
     if (dataSource >= 0) {
@@ -127,7 +125,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
         </BlockText>
-        <RadioGroup onChange={this.handleDataSourceChange} value={`${dataSource}`}>
+        <RadioGroup onChange={() => this.handleDataSourceChange(dataSource)} value={`${dataSource}`}>
           {DATA_SOURCES.map((v, i) => (
             <Radio key={i} label={v.name} value={`${i}`} />
           ))}
@@ -175,14 +173,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
    * Main Renderer
    */
   render() {
-    const { height } = this.props;
-    const { timeRange } = this.props.launcherUrlState;
-    const dataSource = this.props.nerdletUrlState.dataSource || 0;
-    const hideLabels = this.props.nerdletUrlState.hideLabels || false;
-    const { intervalSeconds, queryLimit } = this.props.nerdletUrlState;
     const { account, isLoading } = this.state;
-
-    const DsComponent = (DATA_SOURCES[dataSource] || {}).component; // TODO: || Instructions
 
     return (
       <div className='background'>
@@ -205,14 +196,13 @@ export default class NetworkTelemetryNerdlet extends React.Component {
                   <Spinner fillContainer />
                 )
               ) : (
-                <DsComponent
-                  account={account}
-                  height={height}
-                  hideLabels={hideLabels}
-                  intervalSeconds={intervalSeconds || INTERVAL_SECONDS_DEFAULT}
-                  queryLimit={queryLimit || NRQL_QUERY_LIMIT_DEFAULT}
-                  timeRange={timeRange}
-                />
+                <NerdletStateContext.Consumer>
+                  {nerdletUrlState => {
+                    const DsComponent = (DATA_SOURCES[nerdletUrlState.dataSource] || {}).component;
+                    return <DsComponent />
+                  }
+                  }
+                </NerdletStateContext.Consumer>
               )}
             </div>
           </GridItem>
