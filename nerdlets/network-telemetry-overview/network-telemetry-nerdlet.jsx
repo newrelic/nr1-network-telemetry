@@ -112,7 +112,10 @@ export default class NetworkTelemetryNerdlet extends React.Component {
             <div className='main-container'>
               {isLoading && account.id && <Spinner fillContainer />}
               {!account.id && accountsList.length > 0 && this.renderSelectAccountAlert()}
-              {!account.id && accountsList.length === 0 && this.renderAccountsListError()}
+              {!account.id &&
+                accountsList.length === 0 &&
+                !isLoading &&
+                this.renderAccountsListError()}
               {!isLoading && account.id && this.renderDSComponent()}
             </div>
           </GridItem>

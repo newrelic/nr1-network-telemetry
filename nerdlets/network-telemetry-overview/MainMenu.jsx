@@ -33,7 +33,7 @@ export default class MainMenu extends React.Component {
     this.handleAccountChange = this.handleAccountChange.bind(this);
   }
 
-  handleDataSourceChange = value => {
+  handleDataSourceChange = (evt, value) => {
     const dataSource = parseInt(value, 10);
     nerdlet.setUrlState({ dataSource });
   };
@@ -87,10 +87,7 @@ export default class MainMenu extends React.Component {
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Source</strong>
         </BlockText>
-        <RadioGroup
-          onChange={() => this.handleDataSourceChange(dataSource)}
-          value={`${dataSource}`}
-        >
+        <RadioGroup onChange={this.handleDataSourceChange} value={`${dataSource}`}>
           {DATA_SOURCES.map((v, i) => (
             <Radio key={i} label={v.name} value={`${i}`} />
           ))}
@@ -103,8 +100,6 @@ export default class MainMenu extends React.Component {
           label='Hide Labels'
           onChange={this.handleHideLabelsChange}
         />
-        <br />
-        <br />
 
         <BlockText type={BlockText.TYPE.NORMAL}>
           <strong>Limit results to about...</strong>
