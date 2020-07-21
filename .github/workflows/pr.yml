@@ -74,20 +74,6 @@ jobs:
         id: eslint-check
         run: |
           npm run eslint-check
-        continue-on-error: true
-
-      - name: Annotate Lint Results
-        uses: ataylorme/eslint-annotate-action@1.0.4
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          report-json: eslint_report.json
-        continue-on-error: true
-
-      - name: Check eslint-check outcome
-        if: steps.eslint-check.outcome != 'success'
-        run: |
-          echo "::error::eslint-check failed. View output of _Run eslint-check and generate report_ step"
-          exit 1
 
   test:
     name: test
