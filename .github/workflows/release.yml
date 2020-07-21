@@ -131,6 +131,7 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.OPENSOURCE_BOT_TOKEN }}
+          branch: develop
 
       - name: Re-enable "required_pull_request_reviews" branch protection
         id: enable-branch-protection
