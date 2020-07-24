@@ -1,5 +1,5 @@
-@import url("//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css");
-@import "~react-input-range/lib/css/index.css";
+@import url('//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css');
+@import '~react-input-range/lib/css/index.css';
 
 /* Interval Slider */
 .interval-range {
@@ -166,6 +166,7 @@ label {
 
 .checkbox {
   margin-right: 5px;
+  margin-bottom: 10px;
   -webkit-box-align: center;
   align-items: center;
 }

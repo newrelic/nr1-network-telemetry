@@ -1,3 +1,28 @@
+# [0.5.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.4.1...v0.5.0) (2020-07-21)
+
+
+### Bug Fixes
+
+* added empty state to the dropdown list & main view, updated readme ([ea2238c](https://github.com/newrelic/nr1-network-telemetry/commit/ea2238cd29d05fef29cc07f78d3e06ea07ec215b))
+* adjusted pipeline to not crash ([2488281](https://github.com/newrelic/nr1-network-telemetry/commit/248828112c34123de09ba3cdf188c72c9d0a37c6))
+* fixed incorrect error info ([4702138](https://github.com/newrelic/nr1-network-telemetry/commit/470213863c45b1e01852229fe91c5925240e8236))
+* fixed pretteir setting and fixed files styling ([1e602d1](https://github.com/newrelic/nr1-network-telemetry/commit/1e602d1ac50bde6260b0f628982a2e1affd2f5be))
+* linter fixes ([67f28f9](https://github.com/newrelic/nr1-network-telemetry/commit/67f28f9acb50afc067e14c15fc4c69cd7db15642))
+* prettier file name fixed ([b336db5](https://github.com/newrelic/nr1-network-telemetry/commit/b336db5e68766bbae5c8647221c6dac2f6f78708))
+* resolved conflicts with develop ([d70bc38](https://github.com/newrelic/nr1-network-telemetry/commit/d70bc38053cc256f98634d631f4497a4838bf269))
+* third party notice commits from GH Actions ([#43](https://github.com/newrelic/nr1-network-telemetry/issues/43)) ([a57c63f](https://github.com/newrelic/nr1-network-telemetry/commit/a57c63fb1ee933cbf3c669498138b59a38e36c48))
+* updating to latest version of semantic release plugins ([#45](https://github.com/newrelic/nr1-network-telemetry/issues/45)) ([070e5cb](https://github.com/newrelic/nr1-network-telemetry/commit/070e5cb4898b4aac8ea8df79a9a37ec5ab3aa229))
+
+
+### Features
+
+* added possibility to pause refreshing ([0d855d9](https://github.com/newrelic/nr1-network-telemetry/commit/0d855d91ee2e62336b969a578b3466cd97bc3045))
+* adjusting main menu functionalities ([2f23fee](https://github.com/newrelic/nr1-network-telemetry/commit/2f23feed229149ffd339e6eb06d309f72f7d5163))
+* created separated component to handle main menu ([3ce793a](https://github.com/newrelic/nr1-network-telemetry/commit/3ce793af738ee2dc986f55cd7b05ba03ca500de3))
+* final adjustments, refactored main view, MainMenu component stable ([73deb80](https://github.com/newrelic/nr1-network-telemetry/commit/73deb80d3aa88b2eeea7486e7def000a3eaf0292))
+* first steps of code refactor ([0452148](https://github.com/newrelic/nr1-network-telemetry/commit/04521489c29d0cd57ca941be224e3025c079d9c0))
+* refactored views, passed data correctly ([2c42b79](https://github.com/newrelic/nr1-network-telemetry/commit/2c42b79cb81cfa980d065e42233331fc4feb48ae))
+
 ## [0.4.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.4.0...v0.4.1) (2020-04-01)
 
 

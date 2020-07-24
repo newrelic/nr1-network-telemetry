@@ -4,9 +4,10 @@ on:
   pull_request:
     branches:
       - master
+      - develop
 
   repository_dispatch:
-    types: [pull-request]
+    types: [pull-request-develop, pull-request-master]
 
 jobs:
   checkout-and-build-pr:
@@ -72,21 +73,7 @@ jobs:
       - name: Run eslint-check and generate report
         id: eslint-check
         run: |
-          npm run eslint-check -- --output-file eslint_report.json --format json
-        continue-on-error: true
-
-      - name: Annotate Lint Results
-        uses: ataylorme/eslint-annotate-action@1.0.4
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          report-json: eslint_report.json
-        continue-on-error: true
-
-      - name: Check eslint-check outcome
-        if: steps.eslint-check.outcome != 'success'
-        run: |
-          echo "::error::eslint-check failed. View output of _Run eslint-check and generate report_ step"
-          exit 1
+          npm run eslint-check
 
   test:
     name: test

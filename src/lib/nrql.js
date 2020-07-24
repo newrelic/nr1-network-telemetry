@@ -1,4 +1,4 @@
-import { NerdGraphQuery } from "nr1";
+import { NerdGraphQuery } from 'nr1';
 
 // NerdGraph query wrapper for NRQL
 export const NERDGRAPH_NRQL_QUERY = `
