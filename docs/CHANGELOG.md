@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.0...v0.5.1) (2020-07-24)
+
+
+### Bug Fixes
+
+* update screenshots ([dec3327](https://github.com/newrelic/nr1-network-telemetry/commit/dec3327cc6a4c141d9a9fb9b294f5f89d8025236))
+
 # [0.5.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.4.1...v0.5.0) (2020-07-21)
 
 
