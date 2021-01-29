@@ -40,7 +40,7 @@ export default class NetworkTelemetryNerdlet extends React.Component {
     return (
       <div className='select-account'>
         <HeadingText type={HeadingText.TYPE.HEADING_1}>
-          <Icon sizeType={Icon.SIZE_TYPE.LARGE} type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT} />
+          <Icon type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT} />
           Please Select an Account
         </HeadingText>
       </div>
