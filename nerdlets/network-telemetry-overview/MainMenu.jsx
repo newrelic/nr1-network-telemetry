@@ -27,9 +27,9 @@ export default class MainMenu extends React.Component {
     const intervalSeconds = props.nerdletUrlState.intervalSeconds || INTERVAL_SECONDS_DEFAULT;
 
     this.state = {
+      intervalEnabled: true,
       intervalSlider: intervalSeconds,
       isLoading: true,
-      intervalEnabled: true,
     };
   }
 
