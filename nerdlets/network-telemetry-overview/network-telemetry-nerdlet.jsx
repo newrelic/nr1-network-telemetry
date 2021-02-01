@@ -39,8 +39,11 @@ export default class NetworkTelemetryNerdlet extends React.Component {
   renderSelectAccountAlert = () => {
     return (
       <div className='select-account'>
-        <HeadingText type={HeadingText.TYPE.HEADING_1}>
-          <Icon type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT} />
+        <HeadingText type={HeadingText.TYPE.HEADING_2}>
+          <Icon
+            spacingType={[Icon.SPACING_TYPE.NONE, Icon.SPACING_TYPE.LARGE]}
+            type={Icon.TYPE.INTERFACE__ARROW__ARROW_LEFT}
+          />
           Please Select an Account
         </HeadingText>
       </div>
