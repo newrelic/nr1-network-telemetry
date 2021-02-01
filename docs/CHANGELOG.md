@@ -1,3 +1,10 @@
+## [0.5.2](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.1...v0.5.2) (2021-02-01)
+
+
+### Bug Fixes
+
+* Remove deprecated sizeType prop from nr1 Icon ([08213b9](https://github.com/newrelic/nr1-network-telemetry/commit/08213b9cd449d9b1f377fe5a0c25ef8ab93c03ea))
+
 ## [0.5.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.0...v0.5.1) (2020-07-24)
 
 
