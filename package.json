@@ -33,7 +33,7 @@
     "lodash": "^4.17.20",
     "prop-types": "^15.6.2",
     "react": "^16.6.3",
-    "react-chord-diagram": "^1.5.0",
+    "react-chord-diagram": "^1.7.0",
     "react-dom": "^16.6.3",
     "react-input-range": "^1.3.0",
     "react-vis": "^1.11.7",
