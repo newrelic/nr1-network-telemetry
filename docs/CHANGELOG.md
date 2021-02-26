@@ -1,3 +1,10 @@
+## [0.5.3](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.2...v0.5.3) (2021-02-26)
+
+
+### Bug Fixes
+
+* removed code of conduct ([cc34f1f](https://github.com/newrelic/nr1-network-telemetry/commit/cc34f1f3eee4dd58af7dc063fb50c197127ae825))
+
 ## [0.5.2](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.1...v0.5.2) (2021-02-01)
 
 
