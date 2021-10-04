@@ -1,3 +1,17 @@
+# [0.6.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.3...v0.6.0) (2021-10-04)
+
+
+### Bug Fixes
+
+* eslint run check ([dbcbb8e](https://github.com/newrelic/nr1-network-telemetry/commit/dbcbb8eb5f2e0b854d80b57cdd475f4a291f17a6))
+* husky node version error ([a24354e](https://github.com/newrelic/nr1-network-telemetry/commit/a24354e41fb3029bafc021742ddc41a7a6d4044c))
+* upgrading semantic to node 14 ([0263e05](https://github.com/newrelic/nr1-network-telemetry/commit/0263e059be976a204bd0c3412ff03e6e263cac68))
+
+
+### Features
+
+* update semantic release with node ([e49a784](https://github.com/newrelic/nr1-network-telemetry/commit/e49a784f1d85fddc4c8729930ab36eaa37eeadda))
+
 ## [0.5.3](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.2...v0.5.3) (2021-02-26)
 
 
