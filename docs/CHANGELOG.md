@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.6.0...v0.7.0) (2021-11-05)
+
+
+### Features
+
+* add catalog keywords and categoryTerms ([7dc4f21](https://github.com/newrelic/nr1-network-telemetry/commit/7dc4f21a6d3499d44c843b7262c07e562539e5ca))
+
 # [0.6.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.5.3...v0.6.0) (2021-10-04)
 
 
