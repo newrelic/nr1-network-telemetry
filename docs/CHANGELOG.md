@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.7.0...v0.8.0) (2021-11-09)
+
+
+### Features
+
+* reintroduce nvmrc and upgrade node ([51c5177](https://github.com/newrelic/nr1-network-telemetry/commit/51c51770c013558b1d012a7202728392e3a36504))
+
 # [0.7.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.6.0...v0.7.0) (2021-11-05)
 
 
