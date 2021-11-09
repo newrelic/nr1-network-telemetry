@@ -1,3 +1,10 @@
+## [0.8.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.8.0...v0.8.1) (2021-11-09)
+
+
+### Bug Fixes
+
+* bump version for release ([256b60a](https://github.com/newrelic/nr1-network-telemetry/commit/256b60a5af13c7854f66cc0f9008cb63df4c28ca))
+
 # [0.8.0](https://github.com/newrelic/nr1-network-telemetry/compare/v0.7.0...v0.8.0) (2021-11-09)
 
 
