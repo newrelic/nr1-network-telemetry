@@ -2,6 +2,8 @@
   "tagline": "IPfix and Sflow visualization",
   "repository": "https://github.com/newrelic/nr1-network-telemetry.git",
   "details": "The Network Telemetry application displays the data collected by the Network Telemetry Integration.\n\nUsing the IPfix visualization, you can quickly identify where traffic is coming from and going across your routing tier.\n\nUsing the Sflow visualization, you can view the top talkers in your network, and who they are communicating with.",
+  "categoryTerms": ["os", "infrastructure"],
+  "keywords": ["visualizations", "telemetry", "networking"],
   "support": {
     "issues": {
       "url": "https://github.com/newrelic/nr1-network-telemetry/issues"
