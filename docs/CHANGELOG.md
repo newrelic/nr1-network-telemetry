@@ -1,3 +1,10 @@
+## [0.8.2](https://github.com/newrelic/nr1-network-telemetry/compare/v0.8.1...v0.8.2) (2021-11-10)
+
+
+### Bug Fixes
+
+* word spacing in docs ([98e10ac](https://github.com/newrelic/nr1-network-telemetry/commit/98e10acda825d2da8c44d10ee0fa1106e1fce431))
+
 ## [0.8.1](https://github.com/newrelic/nr1-network-telemetry/compare/v0.8.0...v0.8.1) (2021-11-09)
 
 
