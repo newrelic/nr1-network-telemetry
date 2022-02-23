@@ -8,12 +8,12 @@ import { NerdGraphQuery } from 'nr1';
 export default async function accountsWithData(eventType) {
   const gql = `{actor {accounts {name id reportingEventTypes(filter:["${eventType}"])}}}`;
   const result = await NerdGraphQuery.query({ query: gql });
-  if (result.errors) {
+  if (result.error) {
     console.warn(
       "Can't get reporting event types because NRDB is grumpy at NerdGraph.",
-      result.errors
+      result.error
     );
-    console.warn(JSON.stringify(result.errors.slice(0, 5), 0, 2));
+    console.warn(JSON.stringify(result.error?.graphQLErrors.slice(0, 5), 0, 2));
     return [];
   }
 

@@ -1,6 +1,6 @@
 {
   "schemaType": "NERDPACK",
-  "id": "c03725a8-878f-408b-9853-6568e0ee087a",
+  "id": "b4233aec-ad78-4cd9-b18b-c481cf4cd3b5",
   "displayName": "Network Telemetry",
   "description": "Real time IPfix and Sflow visualization of network data passing through your system."
 }
