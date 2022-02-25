@@ -1,3 +1,11 @@
+## [0.8.3](https://github.com/newrelic/nr1-network-telemetry/compare/v0.8.2...v0.8.3) (2022-02-25)
+
+
+### Bug Fixes
+
+* remove uuid update ([4613a70](https://github.com/newrelic/nr1-network-telemetry/commit/4613a707d897579da2c28a4c07a279dcb7ac3517))
+* update node version in workflows, update errors to error ([87ccf14](https://github.com/newrelic/nr1-network-telemetry/commit/87ccf1499c7fb1958cf88ceaed87c94165d61eed))
+
 ## [0.8.2](https://github.com/newrelic/nr1-network-telemetry/compare/v0.8.1...v0.8.2) (2021-11-10)
 
 
